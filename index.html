@@ -7,6 +7,6 @@
 <div class="strip"><span class="lbl">CONFLICT ALERTS <b id="ccount"></b></span><div id="alerts"></div></div>
 <main><div id="scope" class="view"></div><div id="timeline" class="view" hidden></div><div id="board" class="view" hidden></div><div id="goals" class="view" hidden></div></main>
 <dialog id="dlg"><button class="x">✕</button><div id="dlg-body"></div></dialog>
-<dialog id="imp"><button class="x">✕</button><h2>Import your data.json</h2><p class="small">Stays in this browser only (localStorage). Nothing is uploaded.</p>
+<dialog id="imp"><button class="x">✕</button><h2>Import your board</h2><p class="small">Load <b>atc-board-data.json</b> from the <b>ATC Dashboard</b> folder in your Google Drive (on a phone, download it from Drive first, then pick it here). It stays in this browser only. Nothing is uploaded.</p>
 <input type="file" id="file" accept=".json,application/json"><p>or paste JSON:</p><textarea id="paste" rows="8"></textarea><br><button id="doPaste">Load pasted JSON</button><p id="impErr" class="red"></p></dialog>
 <script src="sample-data.js"></script><script src="app.js"></script></body></html>

@@ -64,7 +64,7 @@ if (typeof document !== 'undefined') {
   function validate(d){ if(!d || !Array.isArray(d.items)) throw new Error('JSON needs an "items" array'); d.events=d.events||[]; d.goals=d.goals||{}; return d; }
   function render(){
     CONF = detectConflicts(DATA);
-    $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · built ${esc(DATA.generated||'')}` : `<span class="warn">● DEMO DATA</span> fictional sample. Use Import to load yours (stays in this browser).`;
+    $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · built ${esc(DATA.generated||'')}` : `<span class="warn">● DEMO DATA</span> fictional sample. Tap Import and load atc-board-data.json from your Google Drive \"ATC Dashboard\" folder (stays in this browser).`;
     $('#alerts').innerHTML = CONF.length ? CONF.slice(0,12).map((c,i)=>`<button class="alert s${c.sev}" data-c="${i}"><b>${c.type}</b> ${esc(c.title)}</button>`).join('') : '<span class="ok">No conflicts detected. Skies clear.</span>';
     $('#ccount').textContent = CONF.length;
     renderScope(); renderTimeline(); renderBoard(); renderGoals();
