@@ -131,7 +131,7 @@ if (typeof document !== 'undefined') {
   window.atcImport = importText;
   window.addEventListener('DOMContentLoaded',()=>{
     load(); render();
-    $('#btnImport').onclick=()=>{ $('#impErr').textContent=''; $('#imp').showModal(); };
+    $('#btnImport').onclick=()=>{ window.open('https://drive.google.com/drive/folders/1BaAZetxcpYbTf5wqi_f0DPSRUww-Gs9n','_blank','noopener'); $('#impErr').textContent=''; $('#imp').showModal(); };
     $('#file').onchange=e=>{ const f=e.target.files[0]; if(f) f.text().then(importText); };
     $('#doPaste').onclick=()=>importText($('#paste').value);
     $('#btnClear').onclick=()=>{ if(confirm('Remove your data from this browser and show the demo?')){ localStorage.removeItem(KEY); load(); render(); } };
