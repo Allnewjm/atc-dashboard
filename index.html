@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATC · Personal Control Tower</title><link rel="stylesheet" href="style.css"></head><body>
+<header><div class="brand">◎ CONTROL TOWER <small>personal ATC</small></div>
+<nav><button data-tab="scope" class="on">SCOPE</button><button data-tab="timeline">TIMELINE</button><button data-tab="board">BOARD</button><button data-tab="goals">GOALS</button></nav>
+<div class="tools"><button id="btnImport">Import data</button><button id="btnClear" class="ghost">Clear</button></div></header>
+<div id="src" class="src"></div><div id="msg" class="src"></div>
+<div class="strip"><span class="lbl">CONFLICT ALERTS <b id="ccount"></b></span><div id="alerts"></div></div>
+<main><div id="scope" class="view"></div><div id="timeline" class="view" hidden></div><div id="board" class="view" hidden></div><div id="goals" class="view" hidden></div></main>
+<dialog id="dlg"><button class="x">✕</button><div id="dlg-body"></div></dialog>
+<dialog id="imp"><button class="x">✕</button><h2>Import your data.json</h2><p class="small">Stays in this browser only (localStorage). Nothing is uploaded.</p>
+<input type="file" id="file" accept=".json,application/json"><p>or paste JSON:</p><textarea id="paste" rows="8"></textarea><br><button id="doPaste">Load pasted JSON</button><p id="impErr" class="red"></p></dialog>
+<script src="sample-data.js"></script><script src="app.js"></script></body></html>

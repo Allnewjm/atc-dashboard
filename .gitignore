@@ -1,0 +1,4 @@
+# Never commit real personal data
+data.json
+*private*
+calendar_raw.json
