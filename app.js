@@ -9,6 +9,8 @@ function dkey(s){ if(!s) return null; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
 function parseDay(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
 function daysBetween(a,b){ return Math.round((parseDay(b)-parseDay(a))/DAY); }
 function isActive(i){ return !/PARKED|DONE/i.test(i.status||''); }
+function boardItems(items, showParked){ return (items||[]).filter(i=>!/DONE/i.test(i.status||'') && (showParked || !/PARKED/i.test(i.status||''))); }
+function validate(d){ if(!d || typeof d!=='object' || !Array.isArray(d.items)) throw new Error('JSON needs an "items" array'); d.events=d.events||[]; d.goals=d.goals||{}; return d; }
 function words(s){ return (s||'').toLowerCase().match(/[a-záéíóúñ]{5,}/g)||[]; }
 
 function detectConflicts(data){
@@ -51,7 +53,7 @@ function detectConflicts(data){
 function fmtT(s){ const d=new Date(s); return d.toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
 function fmtD(k){ if(!k) return 'no date'; return parseDay(k).toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'}); }
 
-if (typeof module !== 'undefined') module.exports = {detectConflicts};
+if (typeof module !== 'undefined') module.exports = {detectConflicts, boardItems, validate, isActive};
 
 if (typeof document !== 'undefined') {
   const $ = s => document.querySelector(s);
@@ -61,10 +63,10 @@ if (typeof document !== 'undefined') {
     try { const raw = localStorage.getItem(KEY); if(raw){ DATA = JSON.parse(raw); DATA._mine = true; return; } } catch(e){}
     DATA = window.SAMPLE_DATA; DATA._mine = false;
   }
-  function validate(d){ if(!d || !Array.isArray(d.items)) throw new Error('JSON needs an "items" array'); d.events=d.events||[]; d.goals=d.goals||{}; return d; }
+  let SHOW_PARKED = false;
   function render(){
     CONF = detectConflicts(DATA);
-    $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · built ${esc(DATA.generated||'')}` : `<span class="warn">● DEMO DATA</span> fictional sample. Tap Import and load atc-board-data.json from your Google Drive \"ATC Dashboard\" folder (stays in this browser).`;
+    $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · built ${esc(DATA.generated||'')} · ${(DATA.items||[]).length} items, ${(DATA.events||[]).length} events` : `<span class="warn">● DEMO DATA</span> fictional sample. Tap Import and load atc-board-data.json from your Google Drive \"ATC Dashboard\" folder (stays in this browser).`;
     $('#alerts').innerHTML = CONF.length ? CONF.slice(0,12).map((c,i)=>`<button class="alert s${c.sev}" data-c="${i}"><b>${c.type}</b> ${esc(c.title)}</button>`).join('') : '<span class="ok">No conflicts detected. Skies clear.</span>';
     $('#ccount').textContent = CONF.length;
     renderScope(); renderTimeline(); renderBoard(); renderGoals();
@@ -107,9 +109,10 @@ if (typeof document !== 'undefined') {
     $('#timeline').innerHTML = (T0.length?`<div class="day cday"><div class="dlabel red">BEHIND YOU · overdue (${T0.length})</div>${T0.map(i=>`<div class="dl" data-i="${esc(i.id)}">◆ ${esc(i.id)} ${esc(i.title)} <span class="red">(${fmtD(i.due)})</span></div>`).join('')}</div>`:'') + h;
   }
   function renderBoard(){
-    const act=(DATA.items||[]).filter(i=>i.status!=='DONE');
+    const act=boardItems(DATA.items, SHOW_PARKED);
+    const parked=(DATA.items||[]).filter(i=>/PARKED/i.test(i.status||'')&&!/DONE/i.test(i.status||'')).length;
     const cats=[...CATS, ...new Set(act.map(i=>i.category).filter(c=>!CATS.includes(c)))];
-    $('#board').innerHTML = `<div class="kan">${cats.map(c=>{const a=act.filter(i=>i.category===c).sort((x,y)=>(x.priority??4)-(y.priority??4)); return `<div class="col ${MUST.has(c)?'must':'ambc'}"><h3>${esc(c)} <small>${a.length}</small></h3><div class="tag">${MUST.has(c)?'MUST-DO':'AMBITION'}</div>${a.map(chip).join('')}</div>`}).join('')}</div>`;
+    $('#board').innerHTML = `<p class="small"><label><input type="checkbox" id="showParked" ${SHOW_PARKED?'checked':''}> Show parked (${parked})</label></p><div class="kan">${cats.map(c=>{const a=act.filter(i=>i.category===c).sort((x,y)=>(x.priority??4)-(y.priority??4)); return `<div class="col ${MUST.has(c)?'must':'ambc'}"><h3>${esc(c)} <small>${a.length}</small></h3><div class="tag">${MUST.has(c)?'MUST-DO':'AMBITION'}</div>${a.map(chip).join('')}</div>`}).join('')}</div>`;
   }
   function renderGoals(){
     const g=DATA.goals||{};
@@ -127,12 +130,13 @@ if (typeof document !== 'undefined') {
     if(t.dataset.e){ const ev=DATA.events.find(x=>x.id===t.dataset.e); if(!ev) return;
       return show(`<h2>${esc(ev.title)}</h2><p>${ev.allDay?fmtD(dkey(ev.start))+' (all day)':fmtT(ev.start)+' to '+fmtT(ev.end)}</p><p>${esc(ev.category)}${ev.block?' · time block':''}</p>`); }
   });
-  function importText(txt){ try{ const d=validate(JSON.parse(txt)); localStorage.setItem(KEY,JSON.stringify(d)); load(); render(); $('#imp').close(); $('#msg').textContent='Imported '+d.items.length+' items, '+d.events.length+' events. Stored only in this browser.'; } catch(err){ $('#impErr').textContent='Import failed: '+err.message; } }
+  document.addEventListener('change',e=>{ if(e.target.id==='showParked'){ SHOW_PARKED=e.target.checked; renderBoard(); } });
+  function importText(txt){ $('#impErr').textContent=''; try{ const d=validate(JSON.parse(txt)); localStorage.setItem(KEY,JSON.stringify(d)); load(); render(); $('#imp').close(); $('#msg').textContent='Imported '+d.items.length+' items, '+d.events.length+' events. Stored only in this browser. ('+new Date().toLocaleTimeString()+')'; return true; } catch(err){ $('#impErr').textContent='Import failed: '+err.message+' (previous data kept)'; return false; } }
   window.atcImport = importText;
   window.addEventListener('DOMContentLoaded',()=>{
     load(); render();
-    $('#btnImport').onclick=()=>{ window.open('https://drive.google.com/drive/folders/1BaAZetxcpYbTf5wqi_f0DPSRUww-Gs9n','_blank','noopener'); $('#impErr').textContent=''; $('#imp').showModal(); };
-    $('#file').onchange=e=>{ const f=e.target.files[0]; if(f) f.text().then(importText); };
+    $('#btnImport').onclick=()=>{ window.open('https://drive.google.com/drive/folders/1BaAZetxcpYbTf5wqi_f0DPSRUww-Gs9n','_blank','noopener'); $('#impErr').textContent=''; $('#file').value=''; $('#imp').showModal(); };
+    $('#file').onchange=e=>{ const inp=e.target, f=inp.files[0]; if(!f) return; f.text().then(importText, err=>{ $('#impErr').textContent='Import failed: '+err.message; }).finally(()=>{ inp.value=''; }); };
     $('#doPaste').onclick=()=>importText($('#paste').value);
     $('#btnClear').onclick=()=>{ if(confirm('Remove your data from this browser and show the demo?')){ localStorage.removeItem(KEY); load(); render(); } };
     document.querySelectorAll('dialog .x').forEach(b=>b.onclick=()=>b.closest('dialog').close());
