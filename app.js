@@ -4,6 +4,24 @@ const KEY = 'atc-dashboard-data-v1';
 const CATS = ['Must-do/household','Legal/divorce','Money/bills','Kids','Work','Business launch','Ambitions/career'];
 const MUST = new Set(['Must-do/household','Legal/divorce','Money/bills','Kids','Work']);
 const DAY = 86400000;
+const APP_BUILD = '2026-11-14 radar zoom';
+const ZOOM_KEY = 'atc-radar-zoom-v1';
+const ZMIN = 0.5, ZMAX = 4;
+
+// Radar view math (pure, testable). View = {z, x, y}: zoom factor and pan offset, both in % of radar size.
+// A blip at offset (dx,dy) from the centre is drawn at 50 + x + dx*z, 50 + y + dy*z.
+function clampView(v){
+  const z = Math.min(ZMAX, Math.max(ZMIN, Number(v && v.z) || 1));
+  const lim = z <= 1 ? 0 : 85*z - 40;   // no panning at or below 1x; when zoomed in, keep content in reach
+  const c = n => Math.min(lim, Math.max(-lim, Number(n) || 0)) + 0;
+  return {z: Math.round(z*1000)/1000, x: c(v && v.x), y: c(v && v.y)};
+}
+// Zoom by factor f keeping the point (cx,cy) (offset from centre, in %) fixed on screen.
+function zoomAt(v, f, cx=0, cy=0){
+  const z2 = Math.min(ZMAX, Math.max(ZMIN, v.z*f)); const k = z2 / v.z;
+  return clampView({z: z2, x: cx - (cx - v.x)*k, y: cy - (cy - v.y)*k});
+}
+function blipPos(v, dx, dy){ return {left: 50 + v.x + dx*v.z, top: 50 + v.y + dy*v.z}; }
 
 function dkey(s){ if(!s) return null; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; const d=new Date(s); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function parseDay(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
@@ -53,7 +71,7 @@ function detectConflicts(data){
 function fmtT(s){ const d=new Date(s); return d.toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
 function fmtD(k){ if(!k) return 'no date'; return parseDay(k).toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'}); }
 
-if (typeof module !== 'undefined') module.exports = {detectConflicts, boardItems, validate, isActive};
+if (typeof module !== 'undefined') module.exports = {detectConflicts, boardItems, validate, isActive, clampView, zoomAt, blipPos, ZMIN, ZMAX};
 
 if (typeof document !== 'undefined') {
   const $ = s => document.querySelector(s);
@@ -66,7 +84,7 @@ if (typeof document !== 'undefined') {
   let SHOW_PARKED = false;
   function render(){
     CONF = detectConflicts(DATA);
-    $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · built ${esc(DATA.generated||'')} · ${(DATA.items||[]).length} items, ${(DATA.events||[]).length} events` : `<span class="warn">● DEMO DATA</span> fictional sample. Tap Import and load atc-board-data.json from your Google Drive \"ATC Dashboard\" folder (stays in this browser).`;
+    $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · built ${esc(DATA.generated||'')} · ${(DATA.items||[]).length} items, ${(DATA.events||[]).length} events · app ${APP_BUILD}` : `<span class="warn">● DEMO DATA</span> fictional sample. Tap Import and load atc-board-data.json from your Google Drive \"ATC Dashboard\" folder (stays in this browser). · app ${APP_BUILD}`;
     $('#alerts').innerHTML = CONF.length ? CONF.slice(0,12).map((c,i)=>`<button class="alert s${c.sev}" data-c="${i}"><b>${c.type}</b> ${esc(c.title)}</button>`).join('') : '<span class="ok">No conflicts detected. Skies clear.</span>';
     $('#ccount').textContent = CONF.length;
     renderScope(); renderTimeline(); renderBoard(); renderGoals();
@@ -87,11 +105,45 @@ if (typeof document !== 'undefined') {
     const now=act.filter(i=>(i.priority??4)<=2 || (i.due&&i.due<=wk)).sort((a,b)=>score(a)-score(b));
     const rest=act.filter(i=>!now.includes(i)).sort((a,b)=>score(a)-score(b));
     const evs=(DATA.events||[]).filter(e=>dkey(e.start)>=T && dkey(e.start)<=wk).sort((a,b)=>a.start.localeCompare(b.start));
-    $('#scope').innerHTML = `<div class="radar"><div class="sweep"></div>${now.slice(0,14).map((i,n)=>{const a=n*2.39, r=18+ (Math.min(i.priority??4,4))*16; return `<span class="blip p${i.priority??4}" data-i="${esc(i.id)}" style="left:${50+r*Math.cos(a)}%;top:${50+r*Math.sin(a)}%" title="${esc(i.title)}">${esc(i.id)}</span>`}).join('')}</div>
+    $('#scope').innerHTML = `<div class="radar-wrap"><div class="radar" id="radar"><div class="rings"></div><div class="sweep"></div>${now.slice(0,14).map((i,n)=>{const a=n*2.39, r=18+ (Math.min(i.priority??4,4))*16; return `<span class="blip p${i.priority??4}" data-i="${esc(i.id)}" data-dx="${(r*Math.cos(a)).toFixed(3)}" data-dy="${(r*Math.sin(a)).toFixed(3)}" style="left:${50+r*Math.cos(a)}%;top:${50+r*Math.sin(a)}%" title="${esc(i.title)}">${esc(i.id)}</span>`}).join('')}</div>
+      <div class="zoomctl" aria-label="Radar zoom"><button type="button" id="zIn" title="Zoom in">+</button><button type="button" id="zOut" title="Zoom out">−</button><button type="button" id="zReset" title="Reset zoom and recenter">⟲</button></div><div class="zlevel" id="zLevel">1.0×</div></div>
       <div class="cols2"><section><h3>ON RADAR · now / this week (${now.length})</h3>${now.map(chip).join('')}</section>
       <section><h3>NEXT 7 DAYS · calendar</h3>${evs.map(e=>`<div class="ev" data-e="${esc(e.id)}"><b>${e.allDay?fmtD(dkey(e.start)):fmtT(e.start)}</b> ${esc(e.title)}</div>`).join('')||'<i>nothing booked</i>'}
       <h3>HOLDING PATTERN (${rest.length})</h3>${rest.map(chip).join('')}</section></div>`;
+    applyView();
   }
+  // ---- Radar zoom / pan ----
+  let VIEW = {z:1,x:0,y:0};
+  try { VIEW = clampView(JSON.parse(localStorage.getItem(ZOOM_KEY)||'null')||VIEW); } catch(e){}
+  function applyView(){
+    const r=$('#radar'); if(!r) return;
+    r.querySelectorAll('.blip').forEach(b=>{ const p=blipPos(VIEW, +b.dataset.dx, +b.dataset.dy); b.style.left=p.left+'%'; b.style.top=p.top+'%'; });
+    const g=r.querySelector('.rings'); if(g) g.style.transform=`translate(${VIEW.x}%,${VIEW.y}%) scale(${VIEW.z})`;
+    r.classList.toggle('pannable', VIEW.z>1);
+    const l=$('#zLevel'); if(l) l.textContent=VIEW.z.toFixed(1)+'×';
+    const zi=$('#zIn'), zo=$('#zOut'); if(zi) zi.disabled=VIEW.z>=ZMAX; if(zo) zo.disabled=VIEW.z<=ZMIN;
+  }
+  function setView(v){ VIEW=clampView(v); try{ localStorage.setItem(ZOOM_KEY, JSON.stringify(VIEW)); }catch(e){} applyView(); }
+  // pointer position relative to radar centre, in % of radar size
+  function rel(r, cx, cy){ const b=r.getBoundingClientRect(); return [((cx-b.left)/b.width-0.5)*100, ((cy-b.top)/b.height-0.5)*100]; }
+  const PTRS = new Map(); let DRAG=null, PINCH=null, SUPPRESS=false;
+  document.addEventListener('wheel', e=>{ const r=e.target.closest && e.target.closest('#radar'); if(!r) return; e.preventDefault();
+    const [cx,cy]=rel(r,e.clientX,e.clientY); setView(zoomAt(VIEW, Math.exp(-e.deltaY*0.0015), cx, cy)); }, {passive:false});
+  document.addEventListener('pointerdown', e=>{ const r=e.target.closest && e.target.closest('#radar'); if(!r) return;
+    PTRS.set(e.pointerId,{x:e.clientX,y:e.clientY}); SUPPRESS=false;
+    if(PTRS.size===2){ const [a,b]=[...PTRS.values()]; const [cx,cy]=rel(r,(a.x+b.x)/2,(a.y+b.y)/2); PINCH={d:Math.hypot(a.x-b.x,a.y-b.y)||1, v:{...VIEW}, cx, cy}; DRAG=null; }
+    else if(PTRS.size===1){ DRAG={sx:e.clientX, sy:e.clientY, v:{...VIEW}, moved:false}; }
+  });
+  document.addEventListener('pointermove', e=>{ if(!PTRS.has(e.pointerId)) return; PTRS.set(e.pointerId,{x:e.clientX,y:e.clientY}); const r=$('#radar'); if(!r) return;
+    if(PINCH && PTRS.size>=2){ const [a,b]=[...PTRS.values()]; SUPPRESS=true; setView(zoomAt(PINCH.v, Math.hypot(a.x-b.x,a.y-b.y)/PINCH.d, PINCH.cx, PINCH.cy)); return; }
+    if(DRAG){ const dx=e.clientX-DRAG.sx, dy=e.clientY-DRAG.sy; if(!DRAG.moved && Math.hypot(dx,dy)<5) return; DRAG.moved=true; SUPPRESS=true;
+      if(DRAG.v.z>1){ const b=r.getBoundingClientRect(); setView({z:DRAG.v.z, x:DRAG.v.x+dx/b.width*100, y:DRAG.v.y+dy/b.height*100}); } }
+  });
+  const endPtr = e=>{ PTRS.delete(e.pointerId); if(PTRS.size<2) PINCH=null; if(!PTRS.size) DRAG=null; };
+  document.addEventListener('pointerup', endPtr); document.addEventListener('pointercancel', endPtr);
+  // a drag or pinch should not also open the item under the finger
+  document.addEventListener('click', e=>{ if(SUPPRESS && e.target.closest && e.target.closest('#radar')){ e.stopPropagation(); e.preventDefault(); } SUPPRESS=false; }, true);
+  document.addEventListener('click', e=>{ const id=e.target.id; if(id==='zIn') setView(zoomAt(VIEW,1.25)); else if(id==='zOut') setView(zoomAt(VIEW,0.8)); else if(id==='zReset') setView({z:1,x:0,y:0}); });
   function renderTimeline(){
     const T=dkey(new Date().toISOString()); let h='';
     for(let n=0;n<42;n++){ const k=dkey(new Date(parseDay(T).getTime()+n*DAY+3600000*12).toISOString());
