@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 10,
-  "updatedAt": "2026-11-14T16:27:45.760Z",
+  "revision": 11,
+  "updatedAt": "2026-11-14T16:27:59Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1106,12 +1106,9 @@
     {
       "id": "#78",
       "title": "Cybercab owner program watch (through Feb 14, 2027)",
-      "status": "waiting",
-      "duration": {
-        "value": 3,
-        "unit": "days"
-      },
-      "deadline": "2027-02-13",
+      "status": "open",
+      "duration": null,
+      "deadline": "2027-02-14",
       "sortOrder": 325,
       "notes": "Added Nov 14, 2026 CT (Julian, by voice). Weekday 9 AM CT check routine starts Mon Nov 16, 2026 and runs through Feb 14, 2027, or ends sooner once Chicagoland/Aurora availability is clear. Each run compares Tesla Cybercab owner program terms, pricing, availability and residency/location rules against the Nov 13, 2026 terms (no Austin residency requirement stated; personal use only, no ride-hail/fleet income without Tesla approval) and also tracks Model 3/Model Y network-earning options. Goal: become a Cybercab operator earning on Tesla's network. · Nov 14, 2026 10:26 AM CT: Live sync test from board.py (Nov 14) - safe to ignore.",
       "owner": "Grok Bot / Julian",
