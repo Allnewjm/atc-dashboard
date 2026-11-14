@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://allnewjm.github.io/atc-dashboard/board.schema.json",
+  "title": "ATC board",
+  "description": "Single source of truth for the ATC dashboard. Money amounts are masked as $•••.",
+  "type": "object",
+  "required": ["schemaVersion", "revision", "updatedAt", "tasks"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "revision": {"type": "integer", "minimum": 1, "description": "Incremented by every write; clients only accept a higher revision than the one they show."},
+    "updatedAt": {"type": "string", "format": "date-time", "description": "ISO time of the last write (UTC)."},
+    "label": {"type": "string"},
+    "generated": {"type": "string", "description": "Legacy: when the Drive export was generated."},
+    "today": {"type": "string"},
+    "sectionOrder": {"type": "array", "items": {"type": "string"}},
+    "sources": {"type": "object"},
+    "goals": {
+      "type": "object",
+      "properties": {
+        "statement": {"type": "string"}, "constraint": {"type": "string"}, "source": {"type": "string"},
+        "hypotheses": {"type": "array", "items": {"type": "object"}},
+        "milestones": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "start"],
+        "properties": {
+          "id": {"type": "string"}, "title": {"type": "string"}, "start": {"type": "string"},
+          "end": {"type": ["string", "null"]}, "allDay": {"type": "boolean"},
+          "category": {"type": ["string", "null"]}, "block": {"type": "boolean"}
+        }
+      }
+    },
+    "tasks": {"type": "array", "items": {"$ref": "#/$defs/task"}}
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "status", "duration", "deadline", "sortOrder", "notes"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "description": "Stable id, the board number as a string, e.g. \"#66\"."},
+        "title": {"type": "string"},
+        "status": {"enum": ["open", "in-progress", "waiting", "done", "parked"]},
+        "legacyStatus": {"type": "string", "description": "Original board status (NOW, THIS WEEK, WAITING, PARKED, DONE). Shown while it agrees with status; dropped when status changes."},
+        "duration": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "object", "required": ["value", "unit"], "additionalProperties": false,
+             "properties": {"value": {"type": "number", "minimum": 0}, "unit": {"enum": ["hours", "days"]}}}
+          ]
+        },
+        "deadline": {"type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "ISO date (was \"due\")."},
+        "sortOrder": {"type": "number", "description": "Vertical order; lower is higher on the list."},
+        "notes": {"type": "string"},
+        "owner": {"type": ["string", "null"]},
+        "priority": {"type": ["number", "null"], "description": "-1 (top) .. 4 (parked)"},
+        "category": {"type": ["string", "null"]},
+        "section": {"type": ["string", "null"]},
+        "court": {"type": ["string", "null"], "description": "mine | waiting | parked"},
+        "completed": {"type": ["string", "null"], "description": "Date closed (done tasks)."},
+        "watching": {"type": ["boolean", "null"]},
+        "waitingOn": {}, "waitingFor": {}, "replyContact": {}
+      },
+      "additionalProperties": true
+    }
+  }
+}
