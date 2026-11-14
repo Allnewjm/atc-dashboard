@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 23,
-  "updatedAt": "2026-11-14T18:51:45.382Z",
+  "revision": 24,
+  "updatedAt": "2026-11-14T18:52:30.555Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1122,6 +1122,23 @@
       "category": "Business launch",
       "court": "waiting",
       "watching": true
+    },
+    {
+      "id": "#79",
+      "title": "Get sudafed",
+      "status": "open",
+      "duration": {
+        "value": 1,
+        "unit": "hours"
+      },
+      "deadline": "2026-11-14",
+      "sortOrder": 30,
+      "notes": "Added Nov 14, 12:52:30 PM CT on the dashboard.",
+      "owner": "Julian",
+      "priority": 2,
+      "category": "Must-do/household",
+      "section": "NOW",
+      "court": "mine"
     }
   ]
 }
