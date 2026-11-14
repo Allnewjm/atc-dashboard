@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 36,
-  "updatedAt": "2026-11-14T19:31:48.799Z",
+  "revision": 37,
+  "updatedAt": "2026-11-14T22:41:02.292Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1129,7 +1129,7 @@
     {
       "id": "#79",
       "title": "Get sudafed",
-      "status": "open",
+      "status": "done",
       "duration": {
         "value": 1,
         "unit": "hours"
@@ -1141,7 +1141,8 @@
       "priority": 2,
       "category": "Must-do/household",
       "section": "NOW",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-14"
     }
   ]
 }
