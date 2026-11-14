@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 8,
-  "updatedAt": "2026-11-14T16:27:43.741Z",
+  "revision": 10,
+  "updatedAt": "2026-11-14T16:27:45.760Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1108,8 +1108,8 @@
       "title": "Cybercab owner program watch (through Feb 14, 2027)",
       "status": "waiting",
       "duration": {
-        "value": 1,
-        "unit": "hours"
+        "value": 3,
+        "unit": "days"
       },
       "deadline": "2027-02-13",
       "sortOrder": 325,
