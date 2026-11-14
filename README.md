@@ -23,11 +23,15 @@ Completed items live in `tasks` with `status: "done"` (and `completed` date).
 
 ## Live sync
 The page loads `board.json` on open and checks it every 5 s (paused while the tab is hidden), and redraws only when a newer `revision` arrives (radar zoom/pan, tab and scroll are kept).
-* **No token (read-only):** reads `raw.githubusercontent.com/.../main/board.json?t=<now>`. No API rate limit, but GitHub's raw CDN can serve the previous version for up to about 5 minutes after a change.
+* **No token (read-only):** reads the GitHub Pages copy `board.json?t=<now>` (same site, no API rate limit). It refreshes when Pages finishes rebuilding after a change, typically about 40–60 s. (raw.githubusercontent.com is the fallback; its `main` copy lagged several minutes in testing.)
 * **With a token (⚙ Sync):** reads through the GitHub contents API with `If-None-Match` (unchanged checks return 304 and don't use up the 5,000/hr limit), so changes appear within about 5 s, and edits are enabled.
 The header line shows `Last updated <time> CT · synced <n>s ago · rev N`.
 
-Token: a fine-grained personal access token for **Allnewjm/atc-dashboard only**, permission **Contents: Read and write**. Paste it once per browser in ⚙ Sync. It is kept only in that browser's localStorage and sent only to api.github.com. Never commit a token.
+Token (entered once per device, remembered in localStorage; viewing never asks): a fine-grained personal access token for **Allnewjm/atc-dashboard only**, permission **Contents: Read and write**. Paste it once per browser in ⚙ Sync. It is kept only in that browser's localStorage and sent only to api.github.com. Never commit a token.
+
+Optional PIN: when saving the token you can set a 4-digit PIN. The token is then stored AES-GCM-encrypted with a PBKDF2 key from the PIN, and editing asks for the PIN once per browser session. Five wrong PINs, or *Forgot PIN?*, wipe the token and PIN so a token can be pasted again. A 4-digit PIN stops casual use of an unlocked phone; it is not strong protection against someone who copies the browser's storage.
+
+Install: open the page on the phone and use *Add to Home Screen* (iOS Safari: Share → Add to Home Screen; Android Chrome: ⋮ → Install app). `manifest.webmanifest` + icons make it open full-screen like an app.
 
 ## Editing (TASKS tab, needs the token)
 Drag ⠿ or ▲▼ to reorder (updates `sortOrder`), tick Done, change status, set deadline and duration, add a task. Changes show instantly, then are saved by a contents-API `PUT` with the current `sha` (one commit per change). If someone else changed the file first (409), the edit is re-applied on the latest version; if the save fails, the change is rolled back with a red message.

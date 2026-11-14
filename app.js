@@ -83,10 +83,32 @@ if (typeof document !== 'undefined') {
   // ---- Live board config ----
   const REPO = 'Allnewjm/atc-dashboard', BRANCH = 'main', FILE = 'board.json';
   const API_URL = `https://api.github.com/repos/${REPO}/contents/${FILE}`;
+  const PAGES_URL = new URL(FILE, location.href).href;   // same-origin GitHub Pages copy
   const RAW_URL = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE}`;
   const TOKEN_KEY = 'atc-gh-token-v1', CACHE_KEY = 'atc-board-cache-v1';
   const POLL_MS = 5000;
-  const tok = () => { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch(e){ return ''; } };
+  // Token: entered once per device. Plain in localStorage, or (optional PIN) AES-GCM encrypted with a PIN-derived key.
+  const ENC_KEY = 'atc-gh-token-enc-v1', UNLOCK_KEY = 'atc-unlocked-v1';
+  let UNLOCKED = ''; try { UNLOCKED = sessionStorage.getItem(UNLOCK_KEY) || ''; } catch(e){}
+  const ls = k => { try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } };
+  const tok = () => ls(ENC_KEY) ? UNLOCKED : ls(TOKEN_KEY);
+  const locked = () => !!ls(ENC_KEY) && !UNLOCKED;
+  const hasToken = () => !!(ls(TOKEN_KEY) || ls(ENC_KEY));
+  const ub = b => btoa(String.fromCharCode(...new Uint8Array(b))), bu = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  async function pinKey(pin, salt){ const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256'}, base, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']); }
+  async function storeWithPin(token, pin){ const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name: 'AES-GCM', iv}, await pinKey(pin, salt), new TextEncoder().encode(token));
+    localStorage.setItem(ENC_KEY, JSON.stringify({salt: ub(salt), iv: ub(iv), ct: ub(ct), fails: 0})); localStorage.removeItem(TOKEN_KEY); setUnlocked(token); }
+  function setUnlocked(t){ UNLOCKED = t; try { t ? sessionStorage.setItem(UNLOCK_KEY, t) : sessionStorage.removeItem(UNLOCK_KEY); } catch(e){} }
+  function forgetToken(){ localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ENC_KEY); setUnlocked(''); ETAG = null; SHA = null; }
+  async function unlockWithPin(pin){ const e = JSON.parse(ls(ENC_KEY));
+    try { const pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: bu(e.iv)}, await pinKey(pin, bu(e.salt)), bu(e.ct));
+      e.fails = 0; localStorage.setItem(ENC_KEY, JSON.stringify(e)); setUnlocked(new TextDecoder().decode(pt)); return true; }
+    catch(err){ e.fails = (e.fails || 0) + 1; if (e.fails >= 5) { forgetToken(); throw new Error('5 wrong PINs: token removed from this device. Paste a token again in ⚙ Sync.'); }
+      localStorage.setItem(ENC_KEY, JSON.stringify(e)); throw new Error('Wrong PIN (' + (5 - e.fails) + ' tries left)'); } }
+  let AFTER_UNLOCK = null;
+  function askUnlock(then){ AFTER_UNLOCK = then || null; $('#pinIn').value = ''; $('#pinState').textContent = ''; $('#pin-dlg').showModal(); setTimeout(() => $('#pinIn').focus(), 50); }
 
   let BOARD = null;        // canonical board currently shown (may include unsaved optimistic edits)
   let CONFIRMED = null;    // last board known to be on GitHub
@@ -117,7 +139,8 @@ if (typeof document !== 'undefined') {
       const j = await r.json();
       return {changed: true, board: BM.migrate(JSON.parse(b64d(j.content))), sha: j.sha};
     }
-    const r = await fetch(RAW_URL + '?t=' + Date.now(), {cache: 'no-store'});
+    let r = await fetch(PAGES_URL + '?t=' + Date.now(), {cache: 'no-store'}).catch(() => null);
+    if (!r || !r.ok) r = await fetch(RAW_URL + '?t=' + Date.now(), {cache: 'no-store'});
     if (!r.ok) throw new Error('board.json ' + r.status);
     const txt = await r.text(); const fp = BM.fingerprint(txt);
     if (fp === FP && !force) return {changed: false};
@@ -164,7 +187,7 @@ if (typeof document !== 'undefined') {
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function mutate(fn, label){
     if (SOURCE !== 'live') return flash('Editing needs the live board (now showing ' + SOURCE + ' data).', true);
-    if (!tok()) { flash('To edit, add a GitHub token in ⚙ Sync (read-only without one).', true); $('#sync-dlg').showModal(); return; }
+    if (!tok()) { if (locked()) return askUnlock(() => mutate(fn, label)); flash('To edit, add a GitHub token in ⚙ Sync (read-only without one).', true); openSync(); return; }
     const next = BM.bump(fn(clone(BOARD)));
     PENDING.push({fn, label});
     setBoard(next, 'live'); render();
@@ -198,7 +221,7 @@ if (typeof document !== 'undefined') {
     const el = $('#sync'); if (!el) return;
     const up = BOARD && BOARD.updatedAt ? ctFmt.format(new Date(BOARD.updatedAt)) + ' CT' : 'n/a';
     const ago = LAST_SYNC ? Math.max(0, Math.round((Date.now() - LAST_SYNC) / 1000)) + 's ago' : 'not yet';
-    const mode = SOURCE === 'live' ? (tok() ? 'live · token (edits on)' : 'live · public (read-only)') : SOURCE === 'cached' ? 'offline copy' : SOURCE === 'import' ? 'imported file (live paused)' : SOURCE;
+    const mode = SOURCE === 'live' ? (tok() ? 'live · token (edits on)' : locked() ? 'live · public (editing locked: tap 🔒)' : 'live · public (read-only)') : SOURCE === 'cached' ? 'offline copy' : SOURCE === 'import' ? 'imported file (live paused)' : SOURCE;
     el.innerHTML = `<span class="${SOURCE==='live' && !SYNC_ERR ? 'ok' : 'warn'}">● ${esc(mode)}</span> · Last updated ${esc(up)} · synced ${esc(ago)}${BOARD && BOARD.revision ? ' · rev ' + BOARD.revision : ''}${PENDING.length ? ' · <span class="warn">saving…</span>' : ''}${SYNC_ERR ? ` · <span class="red">${esc(SYNC_ERR)}</span>` : ''}`;
   }
   setInterval(syncLabel, 1000);
@@ -293,9 +316,9 @@ if (typeof document !== 'undefined') {
   // ---- TASKS: the editing view ----
   function renderTasks(){
     const all = BM.sorted((BOARD && BOARD.tasks) || []); const list = all.filter(t => SHOW_DONE || t.status !== 'done');
-    const canEdit = SOURCE === 'live' && !!tok();
+    const canEdit = SOURCE === 'live' && (!!tok() || locked());
     const opt = t => BM.STATUSES.map(s => `<option value="${s}" ${t.status===s?'selected':''}>${s}</option>`).join('');
-    $('#tasks').innerHTML = `<p class="small">${canEdit ? 'Edits save to board.json on GitHub right away.' : SOURCE === 'live' ? '<span class="warn">Read-only.</span> Add a GitHub token in <a href="#" data-act="sync">⚙ Sync</a> to edit.' : '<span class="warn">Read-only: not showing the live board.</span>'} Drag ⠿ or use ▲▼ to reorder. <label><input type="checkbox" id="showDone" ${SHOW_DONE?'checked':''}> Show done (${all.length - all.filter(t=>t.status!=='done').length})</label></p>
+    $('#tasks').innerHTML = `<p class="small">${canEdit ? (locked() ? '🔒 Editing is locked: your first change asks for your PIN.' : 'Edits save to board.json on GitHub right away.') : SOURCE === 'live' ? '<span class="warn">Read-only.</span> Add a GitHub token in <a href="#" data-act="sync">⚙ Sync</a> to edit (once per device).' : '<span class="warn">Read-only: not showing the live board.</span>'} Drag ⠿ or use ▲▼ to reorder. <label><input type="checkbox" id="showDone" ${SHOW_DONE?'checked':''}> Show done (${all.length - all.filter(t=>t.status!=='done').length})</label></p>
       <form id="addTask" class="addrow"><input name="title" placeholder="New task title" required ${canEdit?'':'disabled'}><input name="deadline" type="date" title="Deadline" ${canEdit?'':'disabled'}><input name="dv" type="number" min="0" step="0.25" placeholder="dur" title="Duration" ${canEdit?'':'disabled'}><select name="du" ${canEdit?'':'disabled'}><option>hours</option><option>days</option></select><button ${canEdit?'':'disabled'}>Add</button></form>
       <div class="tlist">${list.map(t => `<div class="trow ${t.status==='done'?'isdone':''}" data-tid="${esc(t.id)}">
         <span class="grip" draggable="${canEdit}" title="Drag to reorder">⠿</span><span class="mv"><button data-act="up" ${canEdit?'':'disabled'} title="Move up">▲</button><button data-act="down" ${canEdit?'':'disabled'} title="Move down">▼</button></span>
@@ -358,23 +381,38 @@ if (typeof document !== 'undefined') {
   function importText(txt){ $('#impErr').textContent=''; try{ const d=validate(JSON.parse(txt)); localStorage.setItem(KEY,JSON.stringify(d)); setBoard(d,'import'); PENDING=[]; render(); $('#imp').close(); $('#msg').innerHTML=esc('Imported '+DATA.items.length+' open items, '+(d.events||[]).length+' events (this browser only; live sync paused). ')+'<a href="#" id="backLive">Back to live board</a>'; return true; } catch(err){ $('#impErr').textContent='Import failed: '+err.message+' (previous data kept)'; return false; } }
   window.atcImport = importText;
   // ---- Sync settings (token) ----
-  function openSync(){ $('#tokIn').value=''; $('#tokState').textContent = tok() ? 'A token is saved in this browser (edits enabled).' : 'No token saved: the board is live but read-only.'; $('#sync-dlg').showModal(); }
-  async function saveToken(){ const v=$('#tokIn').value.trim(); if(!v) return; const old=tok(); localStorage.setItem(TOKEN_KEY, v); $('#tokState').textContent='Checking…';
-    try { const r = await fetch(`https://api.github.com/repos/${REPO}`, {headers: authH(), cache:'no-store'}); const j = r.ok ? await r.json() : null;
-      if (!r.ok) throw new Error('GitHub said ' + r.status); if (j.permissions && !j.permissions.push) throw new Error('token can read but not write. Set Contents: Read and write.');
-      $('#tokState').innerHTML='<span class="ok">Saved. Edits enabled.</span>'; ETAG=null; SHA=null; await poll(true); render();
-    } catch(err){ if(old) localStorage.setItem(TOKEN_KEY, old); else localStorage.removeItem(TOKEN_KEY); $('#tokState').innerHTML='<span class="red">Not saved: '+esc(err.message)+'</span>'; } }
+  function openSync(){ $('#tokIn').value=''; $('#pinNew').value='';
+    $('#tokState').textContent = locked() ? 'A token is saved on this device, locked with a PIN.' : tok() ? 'A token is saved on this device (edits enabled' + (ls(ENC_KEY) ? ', PIN unlocked for this session).' : ').') : 'No token saved: the board is live but read-only.';
+    $('#sync-dlg').showModal(); }
+  async function saveToken(){ const v=$('#tokIn').value.trim(), pin=$('#pinNew').value.trim();
+    if(!v && !(pin && tok())) { $('#tokState').innerHTML='<span class="red">Paste a token first.</span>'; return; }
+    if(pin && !/^\d{4}$/.test(pin)) { $('#tokState').innerHTML='<span class="red">PIN must be 4 digits (or leave it empty).</span>'; return; }
+    const t = v || tok(); $('#tokState').textContent='Checking…';
+    try { const r = await fetch(`https://api.github.com/repos/${REPO}`, {headers: {'Authorization': 'Bearer ' + t, 'Accept': 'application/vnd.github+json'}, cache:'no-store'}); const j = r.ok ? await r.json() : null;
+      if (!r.ok) throw new Error('GitHub said ' + r.status + (r.status === 401 ? ' (token invalid or expired)' : ''));
+      if (j.permissions && !j.permissions.push) throw new Error('token can read but not write. Set Contents: Read and write.');
+      forgetToken(); if (pin) await storeWithPin(t, pin); else localStorage.setItem(TOKEN_KEY, t);
+      $('#tokState').innerHTML='<span class="ok">Saved on this device. Edits enabled' + (pin ? '; PIN asked once per session.' : '.') + '</span>'; await poll(true); render();
+    } catch(err){ $('#tokState').innerHTML='<span class="red">Not saved: '+esc(err.message)+'</span>'; } }
+  async function doUnlock(){ const pin = $('#pinIn').value.trim(); if (!/^\d{4}$/.test(pin)) { $('#pinState').innerHTML = '<span class="red">Enter your 4-digit PIN.</span>'; return; }
+    $('#pinState').textContent = 'Unlocking…';
+    try { await unlockWithPin(pin); $('#pin-dlg').close(); ETAG = null; await poll(true); render(); const f = AFTER_UNLOCK; AFTER_UNLOCK = null; if (f) f(); }
+    catch(err){ $('#pinState').innerHTML = '<span class="red">' + esc(err.message) + '</span>'; if (!hasToken()) { render(); } } }
   window.addEventListener('DOMContentLoaded',()=>{
     $('#btnImport').onclick=()=>{ window.open('https://drive.google.com/drive/folders/1BaAZetxcpYbTf5wqi_f0DPSRUww-Gs9n','_blank','noopener'); $('#impErr').textContent=''; $('#file').value=''; $('#imp').showModal(); };
     $('#file').onchange=e=>{ const inp=e.target, f=inp.files[0]; if(!f) return; f.text().then(importText, err=>{ $('#impErr').textContent='Import failed: '+err.message; }).finally(()=>{ inp.value=''; }); };
     $('#doPaste').onclick=()=>importText($('#paste').value);
     $('#btnClear').onclick=()=>{ if(confirm('Remove imported data and the offline copy from this browser? (The live board is not touched.)')){ localStorage.removeItem(KEY); localStorage.removeItem(CACHE_KEY); SOURCE='none'; BOARD=null; FP=null; ETAG=null; poll(true); } };
-    $('#btnSync').onclick=openSync; $('#tokSave').onclick=saveToken;
-    $('#tokDel').onclick=()=>{ localStorage.removeItem(TOKEN_KEY); ETAG=null; SHA=null; $('#tokState').textContent='Token removed from this browser. Board is read-only.'; render(); };
+    $('#btnSync').onclick=()=> locked() ? askUnlock() : openSync(); $('#tokSave').onclick=saveToken;
+    $('#tokDel').onclick=()=>{ forgetToken(); $('#tokState').textContent='Token and PIN removed from this device. Board is read-only.'; render(); };
+    $('#pin-dlg').addEventListener('close', ()=>{ if(locked()){ AFTER_UNLOCK=null; render(); } });
+    $('#pinGo').onclick=doUnlock; $('#pinIn').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); doUnlock(); } };
+    $('#pinForgot').onclick=e=>{ e.preventDefault(); forgetToken(); $('#pin-dlg').close(); render(); openSync(); $('#tokState').innerHTML='<span class="warn">Token and PIN cleared. Paste a token (a new one is fine) and pick a new PIN.</span>'; };
+    $('#pinLock').onclick=e=>{ e.preventDefault(); setUnlocked(''); $('#pin-dlg').close(); render(); };
     document.addEventListener('click', e=>{ if(e.target.id==='backLive'){ e.preventDefault(); localStorage.removeItem(KEY); SOURCE='none'; FP=null; ETAG=null; $('#msg').textContent=''; poll(true); } });
     document.querySelectorAll('dialog .x').forEach(b=>b.onclick=()=>b.closest('dialog').close());
     try { const c = localStorage.getItem(CACHE_KEY); if (c) { setBoard(BM.migrate(JSON.parse(c)), 'cached'); render(); } } catch(e){}
     poll(true).then(() => { if (!BOARD) startOffline(); schedule(); });
   });
-  window.atcDebug = () => ({SOURCE, revision: BOARD && BOARD.revision, SHA, ETAG, PENDING: PENDING.length, LAST_SYNC, SYNC_ERR, VIEW});
+  window.atcDebug = () => ({locked: locked(), hasToken: hasToken(), SOURCE, revision: BOARD && BOARD.revision, SHA, ETAG, PENDING: PENDING.length, LAST_SYNC, SYNC_ERR, VIEW});
 }
