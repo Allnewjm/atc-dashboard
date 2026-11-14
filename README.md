@@ -1,6 +1,6 @@
 # ATC Personal Control Tower
 A static, air-traffic-control-style dashboard for to-dos, calendar, goals, and conflicts.
-Views: SCOPE (radar, now/this week; zoom with + − ⟲, wheel/pinch, drag to pan), TIMELINE (6 weeks), BOARD (category columns), TASKS (edit list), GOALS.
+Views: SCOPE (radar, now/this week; zoom with + − ⟲, wheel/pinch, drag to pan), TIMELINE (6 weeks), BOARD (category columns), TASKS (edit list), PACK (pack my day), GOALS.
 
 ## Board data (`board.json`, single source of truth)
 The live board is **`board.json` in this repo's root**. It is public: money amounts are masked as `$•••` (by `tools/migrate.js`, the dashboard and `board.py`); everything else is stored as written. The Google Drive `atc-board-data.json` is a frozen backup from before the move (Nov 14, 2026). Format: `board.schema.json` (JSON Schema 2020-12).
@@ -39,5 +39,15 @@ Drag ⠿ or ▲▼ to reorder (updates `sortOrder`), tick Done, change status, s
 
 `Import file` still loads a board JSON (old or new format) into this browser only, as a fallback; it pauses live sync until reload.
 
+## PACK MY DAY
+The PACK tab greedily fits today's open tasks into the time you have left (a port of the Life Dashboard day packer). Settings stay on this device only (localStorage), not in `board.json`.
+
+* **Window:** start defaults to now, rounded up to the next 5 minutes (or a fixed clock time). End defaults to 9:00 PM CT, or you can type a number of hours available instead. A buffer (default 15%) is left unscheduled.
+* **Candidates:** not done, not parked; waiting-on-others is off by default (toggle to include). Missing durations count as 30 minutes and show a `~` with a hint to set a real estimate. 1 day = 8 working hours.
+* **Order:** overdue and due today first, then in-progress, then higher priority (lower number is higher; −1 is top), then board `sortOrder`, then shorter tasks.
+* **Business hours:** tasks flagged `businessHours` only land in Mon–Fri 9:00–17:00 CT. On a weekend, after 5 PM, or if the remaining window is too short, they go to **Needs business hours** (with the next weekday 9:00 AM CT), not Overflow. Other tasks fill the time before and after that window.
+* **Result:** a timed timeline (CT), a one-line verdict (`Fits, 40 min to spare` / `Over by N min`), Overflow, and Needs business hours. Each row can mark Done, set a duration, or move the task to the top of the board (needs the sync token). The pack recalculates when the board syncs or settings change.
+
+
 ## Tests
-`node --test test/*.test.js` (zoom, schema, migration counts, masking, reorder, change detection). Set `NODE_PATH` to a folder with `ajv` and `ajv-formats` to also check `board.schema.json` strictly.
+`node --test test/*.test.js` (zoom, schema, migration counts, masking, reorder, change detection, day packer). Set `NODE_PATH` to a folder with `ajv` and `ajv-formats` to also check `board.schema.json` strictly.

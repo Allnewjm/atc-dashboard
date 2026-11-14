@@ -4,7 +4,7 @@ const KEY = 'atc-dashboard-data-v1';
 const CATS = ['Must-do/household','Legal/divorce','Money/bills','Kids','Work','Business launch','Ambitions/career'];
 const MUST = new Set(['Must-do/household','Legal/divorce','Money/bills','Kids','Work']);
 const DAY = 86400000;
-const APP_BUILD = '2026-11-14 business hours';
+const APP_BUILD = '2026-11-14 pack my day';
 const BM = (typeof module !== 'undefined' && module.exports) ? require('./board-model.js') : window.BoardModel;
 const cs = s => BM.canonStatus(s);
 const ZOOM_KEY = 'atc-radar-zoom-v1';
@@ -234,7 +234,7 @@ if (typeof document !== 'undefined') {
     $('#src').innerHTML = DATA._mine ? `<span class="ok">● YOUR DATA</span> ${esc(DATA.label||'')} · ${(DATA.items||[]).length} open, ${done} done, ${(DATA.events||[]).length} events · app ${APP_BUILD}` : `<span class="warn">● DEMO DATA</span> fictional sample (live board unavailable). · app ${APP_BUILD}`;
     $('#alerts').innerHTML = CONF.length ? CONF.slice(0,12).map((c,i)=>`<button class="alert s${c.sev}" data-c="${i}"><b>${c.type}</b> ${esc(c.title)}</button>`).join('') : '<span class="ok">No conflicts detected. Skies clear.</span>';
     $('#ccount').textContent = CONF.length;
-    renderScope(); renderTimeline(); renderBoard(); renderTasks(); renderGoals(); syncLabel();
+    renderScope(); renderTimeline(); renderBoard(); renderTasks(); renderPack(); renderGoals(); syncLabel();
   }
   const flagged = id => CONF.filter(c=>c.refs.includes(id));
   function bhBadge(t, compact){
@@ -337,6 +337,71 @@ if (typeof document !== 'undefined') {
         <input type="number" data-act="dv" min="0" step="0.25" value="${t.duration?esc(t.duration.value):''}" placeholder="dur" ${canEdit?'':'disabled'} title="Duration"><select data-act="du" ${canEdit?'':'disabled'}><option ${t.duration&&t.duration.unit==='hours'?'selected':''}>hours</option><option ${t.duration&&t.duration.unit==='days'?'selected':''}>days</option></select>
       </div>`).join('')}</div>`;
   }
+  // ---- PACK MY DAY ----
+  const PACK_KEY = 'atc-pack-settings-v1';
+  const packDefaults = () => ({startMode:'now', start:'09:00', endOfDay:'21:00', hoursAvailable:'', bufferPct:15, includeWaiting:false});
+  function loadPack(){ try { const s = Object.assign(packDefaults(), JSON.parse(localStorage.getItem(PACK_KEY)||'null')||{}); s.bufferPct = Number(s.bufferPct); if (!isFinite(s.bufferPct)) s.bufferPct = 15; s.bufferPct = Math.max(0, Math.min(80, s.bufferPct)); return s; } catch(e){ return packDefaults(); } }
+  function savePack(s){ try { localStorage.setItem(PACK_KEY, JSON.stringify(s)); } catch(e){} }
+  let PACK_S = loadPack();
+  function readPackForm(){
+    if (!$('#packStartNow')) return PACK_S;
+    PACK_S = {startMode: $('#packStartNow').checked ? 'now' : 'fixed', start: $('#packStart').value || '09:00', endOfDay: $('#packEnd').value || '21:00', hoursAvailable: $('#packHours').value, bufferPct: Number($('#packBuffer').value), includeWaiting: $('#packWaiting').checked};
+    if (!isFinite(PACK_S.bufferPct)) PACK_S.bufferPct = 15;
+    PACK_S.bufferPct = Math.max(0, Math.min(80, PACK_S.bufferPct));
+    savePack(PACK_S); return PACK_S;
+  }
+  function packDurLabel(t){
+    if (t.estimated) return '~30 min';
+    if (t.duration && t.duration.unit === 'days') return t.duration.value + 'd';
+    if (t.duration && t.duration.unit === 'hours') return t.duration.value + 'h';
+    return t.minutes + ' min';
+  }
+  function packRow(t, times){
+    const canEdit = SOURCE === 'live' && (!!tok() || locked());
+    const dur = t.estimated ? `<span class="warn" title="No duration set; packed as 30 minutes. Set a duration.">~30 min · set a duration</span>` : `<span class="small">${esc(packDurLabel(t))}</span>`;
+    const val = (t.duration && !t.estimated) ? esc(t.duration.value) : '';
+    return `<div class="prow" data-tid="${esc(t.id)}">
+      ${times ? `<span class="ptime">${esc(times)}</span>` : '<span class="ptime dim">—</span>'}
+      <span class="id" data-i="${esc(t.id)}">${esc(t.id)}</span><span class="tt" data-i="${esc(t.id)}">${esc(t.title)}</span>
+      ${dur}${bhBadge(t)}
+      <span class="pacts"><button type="button" data-pack="done" ${canEdit?'':'disabled'} title="Mark done">Done</button>
+        <input type="number" data-pack="dv" min="0" step="0.25" value="${val}" placeholder="dur" ${canEdit?'':'disabled'} title="Set duration">
+        <select data-pack="du" ${canEdit?'':'disabled'}><option ${t.duration&&t.duration.unit==='hours'?'selected':''}>hours</option><option ${t.duration&&t.duration.unit==='days'?'selected':''}>days</option></select>
+        <button type="button" data-pack="top" ${canEdit?'':'disabled'} title="Move to the top of the board">Top</button></span></div>`;
+  }
+  function renderPack(resultsOnly){
+    const root = $('#pack'); if (!root || !window.DayPacker) return;
+    const s = PACK_S;
+    if (!resultsOnly || !root.querySelector('#packSettings')){
+      const canClock = s.startMode !== 'now';
+      root.innerHTML = `<h3>PACK MY DAY</h3>
+        <p class="pack-hint">Order: overdue and due today first, then in-progress, then higher priority (lower number is higher; −1 is top), then board order, then shorter tasks. A buffer is left unscheduled. Business-hours tasks only land Mon–Fri 9–5 CT; evenings and weekends they go to Needs business hours, not Overflow.</p>
+        <form id="packSettings" class="pack-settings" onsubmit="return false">
+          <label class="chk"><input type="checkbox" id="packStartNow" ${s.startMode!=='fixed'?'checked':''}> Start now (next 5 min)</label>
+          <label>Start time <input type="time" id="packStart" value="${esc(s.start||'09:00')}" ${s.startMode!=='fixed'?'disabled':''}></label>
+          <label>End of day <input type="time" id="packEnd" value="${esc(s.endOfDay||'21:00')}"></label>
+          <label>Hours available <input type="number" id="packHours" min="0" step="0.25" placeholder="use end of day" value="${esc(s.hoursAvailable)}" title="If set, overrides end of day"></label>
+          <label>Buffer % <input type="number" id="packBuffer" min="0" max="80" step="1" value="${esc(s.bufferPct)}"></label>
+          <label class="chk"><input type="checkbox" id="packWaiting" ${s.includeWaiting?'checked':''}> Include waiting</label>
+        </form>
+        <div id="packResults"></div>`;
+    }
+    const el = $('#packResults'); if (!el) return;
+    if (!BOARD || !BOARD.tasks){ el.innerHTML = '<p class="small">Waiting for the board…</p>'; return; }
+    const pack = DayPacker.packDay({tasks: BOARD.tasks, now: new Date(), settings: s, buffer: (Number(s.bufferPct)||0)/100, includeWaiting: !!s.includeWaiting});
+    const startT = DayPacker.fmtTime(pack.start, pack.tz), endT = DayPacker.fmtTime(pack.end, pack.tz);
+    const zero = pack.capacityMinutes <= 0;
+    const packedHtml = pack.packed.length ? pack.packed.map(p => packRow(p.task, p.range)).join('') : '<p class="small">Nothing packed in this window.</p>';
+    const overHtml = pack.overflow.length ? `<h3>OVERFLOW (${pack.overflow.length})</h3><div class="plist">${pack.overflow.map(t => packRow(t)).join('')}</div>` : '';
+    const bhHtml = pack.needsBusinessHours.length ? `<h3>NEEDS BUSINESS HOURS — next window: ${esc(pack.nextBusinessLabel)} (${pack.needsBusinessHours.length})</h3><div class="plist">${pack.needsBusinessHours.map(t => packRow(t)).join('')}</div>` : '';
+    const canEdit = SOURCE === 'live' && (!!tok() || locked());
+    el.innerHTML = `${zero ? '<p class="warn">No time left in this window — push the end of day later or set hours available.</p>' : ''}
+      <div class="pack-verdict ${pack.verdict.kind}">${esc(pack.verdict.text)}</div>
+      <p class="pack-meta">Window ${esc(startT)}–${esc(endT)} CT · ${pack.capacityMinutes} min available · ${esc(String(s.bufferPct))}% buffer → ${pack.packableMinutes} min to pack · ${pack.packed.length} packed, ${pack.overflow.length} overflow, ${pack.needsBusinessHours.length} need business hours.${canEdit?'':' <span class="warn">Read-only until a token is in ⚙ Sync.</span>'}</p>
+      <h3>TIMELINE (${pack.packed.length})</h3><div class="plist">${packedHtml}</div>${overHtml}${bhHtml}`;
+  }
+  setInterval(() => { const v = $('#pack'); if (v && !v.hidden && PACK_S.startMode !== 'fixed') renderPack(true); }, 60000);
+
   const findT = (b, id) => b.tasks.find(t => t.id === id);
   function setStatus(id, st){ mutate(b => { const t = findT(b, id); t.status = st; delete t.legacyStatus; if (st === 'done') t.completed = t.completed || dkey(new Date().toISOString()); return b; }, `${id} status → ${st}`); }
   function move(id, beforeId){ mutate(b => { b.tasks = BM.applyOrder(b.tasks, BM.reorder(b.tasks, id, beforeId)); return b; }, `reorder ${id}`); }
@@ -380,14 +445,22 @@ if (typeof document !== 'undefined') {
   function show(html){ $('#dlg-body').innerHTML=html; $('#dlg').showModal(); }
   document.addEventListener('click',e=>{
     const t=e.target.closest('[data-i],[data-e],[data-c],[data-tab]'); if(!t) return;
-    if(t.dataset.tab){ document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b===t)); document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==t.dataset.tab); return; }
+    if(t.dataset.tab){ document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b===t)); document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==t.dataset.tab); if(t.dataset.tab==='pack') renderPack(); return; }
     if(t.dataset.c!==undefined){ const c=CONF[+t.dataset.c]; return show(`<h2 class="s${c.sev}">${c.type}</h2><p><b>${esc(c.title)}</b></p><p>${esc(c.detail)}</p>`); }
     if(t.dataset.i){ const i=(BOARD.tasks||[]).find(x=>x.id===t.dataset.i); if(!i) return; const f=CONF?flagged(i.id):[];
       return show(`<h2>${esc(i.id)} ${esc(i.title)}</h2><p><b>Status</b> ${esc(BM.statusLabel(i))} · <b>Owner</b> ${esc(i.owner)} · <b>Category</b> ${esc(i.category)}${BM.isBusinessHours(i)?' · '+bhBadge(i):''}</p><p><b>Deadline</b> ${i.deadline?fmtD(i.deadline):'none'} · <b>Duration</b> ${i.duration?esc(i.duration.value+' '+i.duration.unit):'none'}${BM.isBusinessHours(i)?' · <b>Business hours only</b> Mon–Fri 9–5 CT'+(BM.businessHoursOpen()?'':' (business closed now)'):''}</p><p>${esc(i.notes)}</p>${f.map(c=>`<p class="red">⚠ ${c.type}: ${esc(c.detail)}</p>`).join('')}`); }
     if(t.dataset.e){ const ev=DATA.events.find(x=>x.id===t.dataset.e); if(!ev) return;
       return show(`<h2>${esc(ev.title)}</h2><p>${ev.allDay?fmtD(dkey(ev.start))+' (all day)':fmtT(ev.start)+' to '+fmtT(ev.end)}</p><p>${esc(ev.category)}${ev.block?' · time block':''}</p>`); }
   });
-  document.addEventListener('change',e=>{ if(e.target.id==='showParked'){ SHOW_PARKED=e.target.checked; renderBoard(); } if(e.target.id==='showDone'){ SHOW_DONE=e.target.checked; renderTasks(); } });
+  document.addEventListener('change',e=>{ if(e.target.id==='showParked'){ SHOW_PARKED=e.target.checked; renderBoard(); } if(e.target.id==='showDone'){ SHOW_DONE=e.target.checked; renderTasks(); }
+    if(e.target.closest && e.target.closest('#packSettings')){ readPackForm(); const now=$('#packStartNow'); const st=$('#packStart'); if(st) st.disabled = !!(now && now.checked); renderPack(true); }
+    const pel=e.target; if(pel.dataset && (pel.dataset.pack==='dv' || pel.dataset.pack==='du')){ const row=pel.closest('[data-tid]'); if(!row) return; const id=row.dataset.tid; const v=row.querySelector('[data-pack=dv]').value, u=row.querySelector('[data-pack=du]').value;
+      mutate(b => { findT(b, id).duration = v==='' ? null : {value: Math.max(0, Number(v)), unit: u}; return b; }, `${id} duration → ${v==='' ? 'none' : v+' '+u}`); }
+  });
+  document.addEventListener('click',e=>{ const b=e.target.closest && e.target.closest('button[data-pack]'); if(!b) return; const row=b.closest('[data-tid]'); if(!row) return; const id=row.dataset.tid, act=b.dataset.pack;
+    if(act==='done') setStatus(id, 'done');
+    if(act==='top'){ const first=BM.sorted(BOARD.tasks)[0]; if(first && first.id!==id) move(id, first.id); }
+  });
   // Manual import stays as a fallback: shows that file in this browser and pauses live sync until reload / "Back to live".
   function importText(txt){ $('#impErr').textContent=''; try{ const d=validate(JSON.parse(txt)); localStorage.setItem(KEY,JSON.stringify(d)); setBoard(d,'import'); PENDING=[]; render(); $('#imp').close(); $('#msg').innerHTML=esc('Imported '+DATA.items.length+' open items, '+(d.events||[]).length+' events (this browser only; live sync paused). ')+'<a href="#" id="backLive">Back to live board</a>'; return true; } catch(err){ $('#impErr').textContent='Import failed: '+err.message+' (previous data kept)'; return false; } }
   window.atcImport = importText;
