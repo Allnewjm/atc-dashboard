@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 16,
-  "updatedAt": "2026-11-14T17:22:44.846Z",
+  "revision": 17,
+  "updatedAt": "2026-11-14T17:22:45.062Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -326,7 +326,7 @@
       "status": "in-progress",
       "legacyStatus": "NOW",
       "duration": {
-        "value": 0.25,
+        "value": 0.5,
         "unit": "hours"
       },
       "deadline": "2026-11-08",
