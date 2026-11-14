@@ -16,7 +16,7 @@ Each task:
 | `legacyStatus` | the old label (NOW, THIS WEEK, ...); shown while it agrees with `status`, removed when status changes |
 | `duration` | `null` or `{value, unit: "hours"|"days"}` |
 | `deadline` | `null` or `YYYY-MM-DD` (was `due`) |
-| `sortOrder` | number; lower = higher in TASKS and in each BOARD column |
+| `sortOrder` | number; lower = higher in TASKS, BOARD columns, and SCOPE lists (and, after overdue/due-today and priority −1, the PACK tab) |
 | `businessHours` | optional boolean; `true` = can only be done during business hours (roughly Mon–Fri 9–5 CT). Absent or `false` = no restriction |
 | kept fields | `owner`, `priority` (-1..4), `category`, `section`, `court`, `completed`, `watching`, `waitingOn`, `waitingFor`, `replyContact` |
 
@@ -44,7 +44,7 @@ The PACK tab greedily fits today's open tasks into the time you have left (a por
 
 * **Window:** start defaults to now, rounded up to the next 5 minutes (or a fixed clock time). End defaults to 9:00 PM CT, or you can type a number of hours available instead. A buffer (default 15%) is left unscheduled.
 * **Candidates:** not done, not parked; waiting-on-others is off by default (toggle to include). Missing durations count as 30 minutes and show a `~` with a hint to set a real estimate. 1 day = 8 working hours.
-* **Order:** overdue and due today first, then in-progress, then higher priority (lower number is higher; −1 is top), then board `sortOrder`, then shorter tasks.
+* **Order:** overdue and due today first, then priority −1 (top), then the TASKS board `sortOrder`, then shorter tasks. Ordinary priority numbers do not override the manual order.
 * **Business hours:** tasks flagged `businessHours` only land in Mon–Fri 9:00–17:00 CT. On a weekend, after 5 PM, or if the remaining window is too short, they go to **Needs business hours** (with the next weekday 9:00 AM CT), not Overflow. Other tasks fill the time before and after that window.
 * **Result:** a timed timeline (CT), a one-line verdict (`Fits, 40 min to spare` / `Over by N min`), Overflow, and Needs business hours. Each row can mark Done, set a duration, or move the task to the top of the board (needs the sync token). The pack recalculates when the board syncs or settings change.
 

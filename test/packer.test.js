@@ -131,7 +131,7 @@ test('weekday: a business-hours task that does not fit the remaining 9–5 windo
   assert.strictEqual(r.nextBusinessLabel, 'Mon 9:00 AM CT');
 });
 
-test('sort: overdue and due today before later, in-progress before open, lower priority number first, then sortOrder, then shorter', () => {
+test('sort: overdue and due today first, then priority -1, then sortOrder (beats ordinary priority), then shorter', () => {
   const today = '2026-11-13';
   const items = [
     t('#late', {deadline: '2026-12-01', minutes: 10, sortOrder: 10, priority: 0, status: 'open'}),
@@ -143,9 +143,31 @@ test('sort: overdue and due today before later, in-progress before open, lower p
     t('#order', {deadline: '2026-10-01', minutes: 10, sortOrder: 5, priority: 2, status: 'open'})
   ];
   const sorted = items.slice().sort((a, b) => P.comparePackOrder(a, b, today));
-  assert.deepStrictEqual(sorted.map(x => x.id), ['#order', '#short', '#long', '#today', '#prog', '#pri', '#late']);
-  // overdue (#order, #short, #long) first — sortOrder 5 before 50, then shorter before longer
-  // then due today, then in-progress (among not-due-today), then priority -1, then the rest
+  // overdue (#order so=5, then #short/#long so=50 with shorter first), due today, then -1, then same so=10 by id
+  assert.deepStrictEqual(sorted.map(x => x.id), ['#order', '#short', '#long', '#today', '#pri', '#late', '#prog']);
+});
+
+test('sort: board order beats ordinary priority; priority -1 still jumps ahead; in-progress does not', () => {
+  const today = '2026-11-13';
+  const items = [
+    t('#lowPriFirst', {sortOrder: 10, priority: 3, status: 'open'}),
+    t('#highPriLater', {sortOrder: 20, priority: 0, status: 'open'}),
+    t('#inProgLater', {sortOrder: 30, priority: 2, status: 'in-progress'}),
+    t('#topLast', {sortOrder: 40, priority: -1, status: 'open'})
+  ];
+  const sorted = items.slice().sort((a, b) => P.comparePackOrder(a, b, today));
+  assert.deepStrictEqual(sorted.map(x => x.id), ['#topLast', '#lowPriFirst', '#highPriLater', '#inProgLater']);
+});
+
+test('packDay packs in the new board-order ranking, not numeric priority', () => {
+  const start = new Date('2026-11-13T15:00:00Z');
+  const end = P.addMinutes(start, 90);
+  const tasks = [
+    t('#later', {duration: {value: 0.5, unit: 'hours'}, sortOrder: 20, priority: 0}),
+    t('#first', {duration: {value: 0.5, unit: 'hours'}, sortOrder: 10, priority: 3})
+  ];
+  const r = P.packDay({tasks, start, end, buffer: 0, now: start});
+  assert.deepStrictEqual(r.packed.map(p => p.task.id), ['#first', '#later']);
 });
 
 test('candidates skip done and parked, and waiting unless includeWaiting', () => {

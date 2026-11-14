@@ -85,14 +85,13 @@
     if (deadline === todayKey) return 1;
     return 2;
   }
-  // Overdue, then due today, then in-progress, then lower priority number, then sortOrder, then shorter.
+  // Overdue, then due today, then priority −1 (top), then board sortOrder, then shorter.
+  // Manual TASKS order beats ordinary numeric priority; only −1 still jumps the queue.
   function comparePackOrder(a, b, todayKey){
     const d = dueRank(a.deadline, todayKey) - dueRank(b.deadline, todayKey);
     if (d) return d;
-    const ia = a.status === 'in-progress' ? 0 : 1, ib = b.status === 'in-progress' ? 0 : 1;
-    if (ia !== ib) return ia - ib;
-    const pa = (a.priority == null ? 4 : a.priority) - (b.priority == null ? 4 : b.priority);
-    if (pa) return pa;
+    const ta = a.priority === -1 ? 0 : 1, tb = b.priority === -1 ? 0 : 1;
+    if (ta !== tb) return ta - tb;
     const sa = (a.sortOrder == null ? 0 : a.sortOrder) - (b.sortOrder == null ? 0 : b.sortOrder);
     if (sa) return sa;
     const ma = (a.minutes == null ? 0 : a.minutes) - (b.minutes == null ? 0 : b.minutes);

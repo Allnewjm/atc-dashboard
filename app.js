@@ -4,7 +4,7 @@ const KEY = 'atc-dashboard-data-v1';
 const CATS = ['Must-do/household','Legal/divorce','Money/bills','Kids','Work','Business launch','Ambitions/career'];
 const MUST = new Set(['Must-do/household','Legal/divorce','Money/bills','Kids','Work']);
 const DAY = 86400000;
-const APP_BUILD = '2026-11-14 pack my day';
+const APP_BUILD = '2026-11-14 board order';
 const BM = (typeof module !== 'undefined' && module.exports) ? require('./board-model.js') : window.BoardModel;
 const cs = s => BM.canonStatus(s);
 const ZOOM_KEY = 'atc-radar-zoom-v1';
@@ -32,6 +32,16 @@ function isActive(i){ const c=cs(i.status); return c!=='parked' && c!=='done'; }
 function boardItems(items, showParked){ return (items||[]).filter(i=>cs(i.status)!=='done' && (showParked || cs(i.status)!=='parked')); }
 // Canonical board -> the item list the views use (not-done tasks, due = deadline).
 function viewData(board){ return Object.assign({}, board, {items: BM.sorted(board.tasks||[]).filter(t=>t.status!=='done').map(t=>Object.assign({}, t, {due: t.deadline||null}))}); }
+function addDaysKey(k, n){ const d=parseDay(k); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+// SCOPE lists: ON RADAR stays "priority <= 2 or due within 7 days"; both lists follow TASKS (sortOrder) order.
+function scopeLists(items, today){
+  const T = today || dkey(new Date().toISOString());
+  const wk = addDaysKey(T, 7);
+  const act = (items||[]).filter(isActive);
+  const now = act.filter(i => (i.priority??4)<=2 || (i.due && i.due<=wk));
+  const rest = act.filter(i => !now.includes(i));
+  return {now: BM.sorted(now), rest: BM.sorted(rest), today: T, week: wk};
+}
 function validate(d){ const b=BM.migrate(d); b.events=b.events||[]; b.goals=b.goals||{}; return b; }
 function words(s){ return (s||'').toLowerCase().match(/[a-záéíóúñ]{5,}/g)||[]; }
 
@@ -75,7 +85,7 @@ function detectConflicts(data){
 function fmtT(s){ const d=new Date(s); return d.toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
 function fmtD(k){ if(!k) return 'no date'; return parseDay(k).toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'}); }
 
-if (typeof module !== 'undefined') module.exports = {detectConflicts, boardItems, validate, viewData, isActive, clampView, zoomAt, blipPos, ZMIN, ZMAX};
+if (typeof module !== 'undefined') module.exports = {detectConflicts, boardItems, validate, viewData, scopeLists, addDaysKey, isActive, clampView, zoomAt, blipPos, ZMIN, ZMAX};
 
 if (typeof document !== 'undefined') {
   const $ = s => document.querySelector(s);
@@ -253,11 +263,8 @@ if (typeof document !== 'undefined') {
       <div class="row small"><span class="${od?'red':''}">${i.due?'⏱ '+fmtD(i.due):'no date'}${i.duration?' · '+esc(i.duration.value+' '+i.duration.unit):''}</span><span>${esc(i.category)}</span>${f.length?`<span class="red">⚠ ${f.length}</span>`:''}</div></div>`;
   }
   function renderScope(){
-    const T=dkey(new Date().toISOString()); const wk=dkey(new Date(Date.now()+7*DAY).toISOString());
-    const act=(DATA.items||[]).filter(isActive);
-    const score=i=>(i.priority??4)*100 + (i.due? Math.max(-50,Math.min(60,daysBetween(T,i.due))) : 80);
-    const now=act.filter(i=>(i.priority??4)<=2 || (i.due&&i.due<=wk)).sort((a,b)=>score(a)-score(b));
-    const rest=act.filter(i=>!now.includes(i)).sort((a,b)=>score(a)-score(b));
+    const T=dkey(new Date().toISOString());
+    const {now, rest, week: wk}=scopeLists(DATA.items||[], T);
     const evs=(DATA.events||[]).filter(e=>dkey(e.start)>=T && dkey(e.start)<=wk).sort((a,b)=>a.start.localeCompare(b.start));
     $('#scope').innerHTML = `<div class="radar-wrap"><div class="radar" id="radar"><div class="rings"></div><div class="sweep"></div>${now.slice(0,14).map((i,n)=>{const a=n*2.39, r=18+ (Math.min(i.priority??4,4))*16; const tip=i.title+(BM.isBusinessHours(i)?' · 🏢 M–F 9–5 CT'+(BM.businessHoursOpen()?'':' (business closed now)'):''); return `<span class="blip p${i.priority??4}" data-i="${esc(i.id)}" data-dx="${(r*Math.cos(a)).toFixed(3)}" data-dy="${(r*Math.sin(a)).toFixed(3)}" style="left:${50+r*Math.cos(a)}%;top:${50+r*Math.sin(a)}%" title="${esc(tip)}">${esc(i.id)}${BM.isBusinessHours(i)?' 🏢':''}</span>`}).join('')}</div>
       <div class="zoomctl" aria-label="Radar zoom"><button type="button" id="zIn" title="Zoom in">+</button><button type="button" id="zOut" title="Zoom out">−</button><button type="button" id="zReset" title="Reset zoom and recenter">⟲</button></div><div class="zlevel" id="zLevel">1.0×</div></div>
@@ -375,7 +382,7 @@ if (typeof document !== 'undefined') {
     if (!resultsOnly || !root.querySelector('#packSettings')){
       const canClock = s.startMode !== 'now';
       root.innerHTML = `<h3>PACK MY DAY</h3>
-        <p class="pack-hint">Order: overdue and due today first, then in-progress, then higher priority (lower number is higher; −1 is top), then board order, then shorter tasks. A buffer is left unscheduled. Business-hours tasks only land Mon–Fri 9–5 CT; evenings and weekends they go to Needs business hours, not Overflow.</p>
+        <p class="pack-hint">Order: overdue and due today first, then priority −1 (top), then the TASKS board order, then shorter tasks. Ordinary priority numbers do not jump the queue. A buffer is left unscheduled. Business-hours tasks only land Mon–Fri 9–5 CT; evenings and weekends they go to Needs business hours, not Overflow.</p>
         <form id="packSettings" class="pack-settings" onsubmit="return false">
           <label class="chk"><input type="checkbox" id="packStartNow" ${s.startMode!=='fixed'?'checked':''}> Start now (next 5 min)</label>
           <label>Start time <input type="time" id="packStart" value="${esc(s.start||'09:00')}" ${s.startMode!=='fixed'?'disabled':''}></label>
