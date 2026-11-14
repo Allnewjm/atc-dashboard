@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 12,
-  "updatedAt": "2026-11-14T16:28:01Z",
+  "revision": 13,
+  "updatedAt": "2026-11-14T17:19:36.499Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -278,8 +278,7 @@
     {
       "id": "#73",
       "title": "get cabin bag",
-      "status": "in-progress",
-      "legacyStatus": "NOW",
+      "status": "done",
       "duration": null,
       "deadline": "2026-11-08",
       "sortOrder": -10,
@@ -288,7 +287,8 @@
       "section": "NOW",
       "priority": -1,
       "category": "Must-do/household",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-14"
     },
     {
       "id": "#74",
