@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 15,
-  "updatedAt": "2026-11-14T17:19:41.455Z",
+  "revision": 16,
+  "updatedAt": "2026-11-14T17:22:44.846Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -325,7 +325,10 @@
       "title": "Finalize the Volt title transfer to Diana",
       "status": "in-progress",
       "legacyStatus": "NOW",
-      "duration": null,
+      "duration": {
+        "value": 0.25,
+        "unit": "hours"
+      },
       "deadline": "2026-11-08",
       "sortOrder": 40,
       "notes": "Added Nov 8 9:58am CT (Julian): to-do for today, Sun Nov 8. Follow-up to completed #64 (Diana email re Volt title/plates). · Nov 8 12:00 PM CT: moved to top of board per Julian (priority 2 → -1).",
