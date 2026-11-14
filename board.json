@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 13,
-  "updatedAt": "2026-11-14T17:19:36.499Z",
+  "revision": 15,
+  "updatedAt": "2026-11-14T17:19:41.455Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -293,8 +293,7 @@
     {
       "id": "#74",
       "title": "drop off tia's medicine at Post office",
-      "status": "in-progress",
-      "legacyStatus": "NOW",
+      "status": "done",
       "duration": null,
       "deadline": "2026-11-08",
       "sortOrder": 0,
@@ -303,13 +302,13 @@
       "section": "NOW",
       "priority": -1,
       "category": "Must-do/household",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-14"
     },
     {
       "id": "#76",
       "title": "Stop at ATM",
-      "status": "in-progress",
-      "legacyStatus": "NOW",
+      "status": "done",
       "duration": null,
       "deadline": "2026-11-08",
       "sortOrder": 30,
@@ -318,7 +317,8 @@
       "section": "NOW",
       "priority": -1,
       "category": "Must-do/household",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-14"
     },
     {
       "id": "#77",
