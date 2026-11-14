@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 22,
-  "updatedAt": "2026-11-14T18:51:43.207Z",
+  "revision": 23,
+  "updatedAt": "2026-11-14T18:51:45.382Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -467,7 +467,7 @@
       "legacyStatus": "NOW",
       "duration": null,
       "deadline": null,
-      "sortOrder": 105,
+      "sortOrder": 95,
       "notes": "Added by Julian Oct 25",
       "owner": "Julian",
       "section": "NOW",
