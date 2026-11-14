@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 4,
-  "updatedAt": "2026-11-14T16:27:37.364Z",
+  "revision": 5,
+  "updatedAt": "2026-11-14T16:27:40.284Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -282,7 +282,7 @@
       "legacyStatus": "NOW",
       "duration": null,
       "deadline": "2026-11-08",
-      "sortOrder": 10,
+      "sortOrder": -10,
       "notes": "Added Nov 7 11:52pm CT (Julian): to-do for tomorrow, Sun Nov 8. · Nov 8 12:00 PM CT: moved to top of board per Julian (priority 2 → -1).",
       "owner": "Julian",
       "section": "NOW",
