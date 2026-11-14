@@ -4,7 +4,7 @@ const KEY = 'atc-dashboard-data-v1';
 const CATS = ['Must-do/household','Legal/divorce','Money/bills','Kids','Work','Business launch','Ambitions/career'];
 const MUST = new Set(['Must-do/household','Legal/divorce','Money/bills','Kids','Work']);
 const DAY = 86400000;
-const APP_BUILD = '2026-11-14 live board v1';
+const APP_BUILD = '2026-11-14 business hours';
 const BM = (typeof module !== 'undefined' && module.exports) ? require('./board-model.js') : window.BoardModel;
 const cs = s => BM.canonStatus(s);
 const ZOOM_KEY = 'atc-radar-zoom-v1';
@@ -237,11 +237,18 @@ if (typeof document !== 'undefined') {
     renderScope(); renderTimeline(); renderBoard(); renderTasks(); renderGoals(); syncLabel();
   }
   const flagged = id => CONF.filter(c=>c.refs.includes(id));
+  function bhBadge(t, compact){
+    if (!BM.isBusinessHours(t)) return '';
+    const open = BM.businessHoursOpen();
+    const tip = 'Business hours only: Mon–Fri 9–5 CT' + (open ? '' : ' · business closed now');
+    const lab = compact ? '🏢' : ('M–F 9–5' + (open ? '' : ' · closed now'));
+    return `<span class="bh-badge${open?'':' closed'}" title="${esc(tip)}">${lab}</span>`;
+  }
   function chip(i){
     const f=flagged(i.id); const T=dkey(new Date().toISOString());
     const od = i.due && i.due<T && isActive(i);
     return `<div class="item p${i.priority??4} ${f.length?'hot':''}" data-i="${esc(i.id)}">
-      <div class="row"><span class="id">${esc(i.id)}</span><span class="st">${esc(BM.statusLabel(i))}</span>${MUST.has(i.category)?'':'<span class="amb">AMBITION</span>'}</div>
+      <div class="row"><span class="id">${esc(i.id)}</span><span class="st">${esc(BM.statusLabel(i))}</span>${bhBadge(i)}${MUST.has(i.category)?'':'<span class="amb">AMBITION</span>'}</div>
       <div class="ttl">${esc(i.title)}</div>
       <div class="row small"><span class="${od?'red':''}">${i.due?'⏱ '+fmtD(i.due):'no date'}${i.duration?' · '+esc(i.duration.value+' '+i.duration.unit):''}</span><span>${esc(i.category)}</span>${f.length?`<span class="red">⚠ ${f.length}</span>`:''}</div></div>`;
   }
@@ -252,7 +259,7 @@ if (typeof document !== 'undefined') {
     const now=act.filter(i=>(i.priority??4)<=2 || (i.due&&i.due<=wk)).sort((a,b)=>score(a)-score(b));
     const rest=act.filter(i=>!now.includes(i)).sort((a,b)=>score(a)-score(b));
     const evs=(DATA.events||[]).filter(e=>dkey(e.start)>=T && dkey(e.start)<=wk).sort((a,b)=>a.start.localeCompare(b.start));
-    $('#scope').innerHTML = `<div class="radar-wrap"><div class="radar" id="radar"><div class="rings"></div><div class="sweep"></div>${now.slice(0,14).map((i,n)=>{const a=n*2.39, r=18+ (Math.min(i.priority??4,4))*16; return `<span class="blip p${i.priority??4}" data-i="${esc(i.id)}" data-dx="${(r*Math.cos(a)).toFixed(3)}" data-dy="${(r*Math.sin(a)).toFixed(3)}" style="left:${50+r*Math.cos(a)}%;top:${50+r*Math.sin(a)}%" title="${esc(i.title)}">${esc(i.id)}</span>`}).join('')}</div>
+    $('#scope').innerHTML = `<div class="radar-wrap"><div class="radar" id="radar"><div class="rings"></div><div class="sweep"></div>${now.slice(0,14).map((i,n)=>{const a=n*2.39, r=18+ (Math.min(i.priority??4,4))*16; const tip=i.title+(BM.isBusinessHours(i)?' · 🏢 M–F 9–5 CT'+(BM.businessHoursOpen()?'':' (business closed now)'):''); return `<span class="blip p${i.priority??4}" data-i="${esc(i.id)}" data-dx="${(r*Math.cos(a)).toFixed(3)}" data-dy="${(r*Math.sin(a)).toFixed(3)}" style="left:${50+r*Math.cos(a)}%;top:${50+r*Math.sin(a)}%" title="${esc(tip)}">${esc(i.id)}${BM.isBusinessHours(i)?' 🏢':''}</span>`}).join('')}</div>
       <div class="zoomctl" aria-label="Radar zoom"><button type="button" id="zIn" title="Zoom in">+</button><button type="button" id="zOut" title="Zoom out">−</button><button type="button" id="zReset" title="Reset zoom and recenter">⟲</button></div><div class="zlevel" id="zLevel">1.0×</div></div>
       <div class="cols2"><section><h3>ON RADAR · now / this week (${now.length})</h3>${now.map(chip).join('')}</section>
       <section><h3>NEXT 7 DAYS · calendar</h3>${evs.map(e=>`<div class="ev" data-e="${esc(e.id)}"><b>${e.allDay?fmtD(dkey(e.start)):fmtT(e.start)}</b> ${esc(e.title)}</div>`).join('')||'<i>nothing booked</i>'}
@@ -319,11 +326,12 @@ if (typeof document !== 'undefined') {
     const canEdit = SOURCE === 'live' && (!!tok() || locked());
     const opt = t => BM.STATUSES.map(s => `<option value="${s}" ${t.status===s?'selected':''}>${s}</option>`).join('');
     $('#tasks').innerHTML = `<p class="small">${canEdit ? (locked() ? '🔒 Editing is locked: your first change asks for your PIN.' : 'Edits save to board.json on GitHub right away.') : SOURCE === 'live' ? '<span class="warn">Read-only.</span> Add a GitHub token in <a href="#" data-act="sync">⚙ Sync</a> to edit (once per device).' : '<span class="warn">Read-only: not showing the live board.</span>'} Drag ⠿ or use ▲▼ to reorder. <label><input type="checkbox" id="showDone" ${SHOW_DONE?'checked':''}> Show done (${all.length - all.filter(t=>t.status!=='done').length})</label></p>
-      <form id="addTask" class="addrow"><input name="title" placeholder="New task title" required ${canEdit?'':'disabled'}><input name="deadline" type="date" title="Deadline" ${canEdit?'':'disabled'}><input name="dv" type="number" min="0" step="0.25" placeholder="dur" title="Duration" ${canEdit?'':'disabled'}><select name="du" ${canEdit?'':'disabled'}><option>hours</option><option>days</option></select><button ${canEdit?'':'disabled'}>Add</button></form>
+      <form id="addTask" class="addrow"><input name="title" placeholder="New task title" required ${canEdit?'':'disabled'}><input name="deadline" type="date" title="Deadline" ${canEdit?'':'disabled'}><input name="dv" type="number" min="0" step="0.25" placeholder="dur" title="Duration" ${canEdit?'':'disabled'}><select name="du" ${canEdit?'':'disabled'}><option>hours</option><option>days</option></select><label class="bh" title="Can only be done during business hours (Mon–Fri 9–5 CT)"><input type="checkbox" name="bh" ${canEdit?'':'disabled'}> 🏢 Business hours</label><button ${canEdit?'':'disabled'}>Add</button></form>
       <div class="tlist">${list.map(t => `<div class="trow ${t.status==='done'?'isdone':''}" data-tid="${esc(t.id)}">
         <span class="grip" draggable="${canEdit}" title="Drag to reorder">⠿</span><span class="mv"><button data-act="up" ${canEdit?'':'disabled'} title="Move up">▲</button><button data-act="down" ${canEdit?'':'disabled'} title="Move down">▼</button></span>
         <input type="checkbox" data-act="done" ${t.status==='done'?'checked':''} ${canEdit?'':'disabled'} title="Done">
         <span class="id" data-i="${esc(t.id)}">${esc(t.id)}</span><span class="tt" data-i="${esc(t.id)}">${esc(t.title)}</span>
+        <label class="bh ${t.businessHours?'on':''}" title="Business hours only (Mon–Fri 9–5 CT)"><input type="checkbox" data-act="bh" ${t.businessHours?'checked':''} ${canEdit?'':'disabled'}> 🏢</label>${bhBadge(t)}
         <select data-act="status" ${canEdit?'':'disabled'}>${opt(t)}</select>
         <input type="date" data-act="deadline" value="${esc(t.deadline||'')}" ${canEdit?'':'disabled'} title="Deadline">
         <input type="number" data-act="dv" min="0" step="0.25" value="${t.duration?esc(t.duration.value):''}" placeholder="dur" ${canEdit?'':'disabled'} title="Duration"><select data-act="du" ${canEdit?'':'disabled'}><option ${t.duration&&t.duration.unit==='hours'?'selected':''}>hours</option><option ${t.duration&&t.duration.unit==='days'?'selected':''}>days</option></select>
@@ -353,12 +361,15 @@ if (typeof document !== 'undefined') {
     if (act === 'deadline') return mutate(b => { findT(b, id).deadline = el.value || null; return b; }, `${id} deadline → ${el.value || 'none'}`);
     if (act === 'dv' || act === 'du') { const v = row.querySelector('[data-act=dv]').value, u = row.querySelector('[data-act=du]').value;
       return mutate(b => { findT(b, id).duration = v === '' ? null : {value: Math.max(0, Number(v)), unit: u}; return b; }, `${id} duration → ${v === '' ? 'none' : v + ' ' + u}`); }
+    if (act === 'bh') return mutate(b => { const t = findT(b, id); if (el.checked) t.businessHours = true; else delete t.businessHours; return b; }, `${id} business hours → ${el.checked ? 'on' : 'off'}`);
   });
   document.addEventListener('submit', e => { if (e.target.id !== 'addTask') return; e.preventDefault(); const f = e.target;
-    const title = BM.maskMoney(f.title.value.trim()); if (!title) return; const dl = f.deadline.value || null, dv = f.dv.value, du = f.du.value;
+    const title = BM.maskMoney(f.title.value.trim()); if (!title) return; const dl = f.deadline.value || null, dv = f.dv.value, du = f.du.value, bh = !!(f.bh && f.bh.checked);
     mutate(b => { const id = BM.nextId(b.tasks); const open = b.tasks.filter(t => t.status !== 'done');
-      b.tasks.push({id, title, status: 'open', duration: dv === '' ? null : {value: Number(dv), unit: du}, deadline: dl, sortOrder: (open.length ? Math.min(...open.map(t => t.sortOrder)) : 20) - 10,
-        notes: 'Added ' + ctFmt.format(new Date()) + ' CT on the dashboard.', owner: 'Julian', priority: 2, category: 'Must-do/household', section: 'NOW', court: 'mine'}); return b; }, `add "${title}"`);
+      const t = {id, title, status: 'open', duration: dv === '' ? null : {value: Number(dv), unit: du}, deadline: dl, sortOrder: (open.length ? Math.min(...open.map(t => t.sortOrder)) : 20) - 10,
+        notes: 'Added ' + ctFmt.format(new Date()) + ' CT on the dashboard.', owner: 'Julian', priority: 2, category: 'Must-do/household', section: 'NOW', court: 'mine'};
+      if (bh) t.businessHours = true;
+      b.tasks.push(t); return b; }, `add "${title}"`);
   });
   function renderGoals(){
     const g=DATA.goals||{};
@@ -372,7 +383,7 @@ if (typeof document !== 'undefined') {
     if(t.dataset.tab){ document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b===t)); document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==t.dataset.tab); return; }
     if(t.dataset.c!==undefined){ const c=CONF[+t.dataset.c]; return show(`<h2 class="s${c.sev}">${c.type}</h2><p><b>${esc(c.title)}</b></p><p>${esc(c.detail)}</p>`); }
     if(t.dataset.i){ const i=(BOARD.tasks||[]).find(x=>x.id===t.dataset.i); if(!i) return; const f=CONF?flagged(i.id):[];
-      return show(`<h2>${esc(i.id)} ${esc(i.title)}</h2><p><b>Status</b> ${esc(BM.statusLabel(i))} · <b>Owner</b> ${esc(i.owner)} · <b>Category</b> ${esc(i.category)}</p><p><b>Deadline</b> ${i.deadline?fmtD(i.deadline):'none'} · <b>Duration</b> ${i.duration?esc(i.duration.value+' '+i.duration.unit):'none'}</p><p>${esc(i.notes)}</p>${f.map(c=>`<p class="red">⚠ ${c.type}: ${esc(c.detail)}</p>`).join('')}`); }
+      return show(`<h2>${esc(i.id)} ${esc(i.title)}</h2><p><b>Status</b> ${esc(BM.statusLabel(i))} · <b>Owner</b> ${esc(i.owner)} · <b>Category</b> ${esc(i.category)}${BM.isBusinessHours(i)?' · '+bhBadge(i):''}</p><p><b>Deadline</b> ${i.deadline?fmtD(i.deadline):'none'} · <b>Duration</b> ${i.duration?esc(i.duration.value+' '+i.duration.unit):'none'}${BM.isBusinessHours(i)?' · <b>Business hours only</b> Mon–Fri 9–5 CT'+(BM.businessHoursOpen()?'':' (business closed now)'):''}</p><p>${esc(i.notes)}</p>${f.map(c=>`<p class="red">⚠ ${c.type}: ${esc(c.detail)}</p>`).join('')}`); }
     if(t.dataset.e){ const ev=DATA.events.find(x=>x.id===t.dataset.e); if(!ev) return;
       return show(`<h2>${esc(ev.title)}</h2><p>${ev.allDay?fmtD(dkey(ev.start))+' (all day)':fmtT(ev.start)+' to '+fmtT(ev.end)}</p><p>${esc(ev.category)}${ev.block?' · time block':''}</p>`); }
   });

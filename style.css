@@ -40,3 +40,7 @@ input,select{background:#020a06;color:#cfeedd;border:1px solid var(--g2);border-
 .trow .tt{flex:1;min-width:160px;cursor:pointer}.trow .id{cursor:pointer;min-width:34px}.trow.isdone .tt{text-decoration:line-through;color:var(--dim)}
 .trow input[type=number]{width:62px}.trow .grip{cursor:grab;color:var(--dim);font-size:16px;padding:0 2px}.trow .mv button{padding:0 4px;font-size:10px}
 .trow.dragging{opacity:.4}.trow.over-top{border-top:2px solid var(--g)}.trow.over-bot{border-bottom:2px solid var(--g)}
+.bh{font-size:11px;color:var(--dim);display:inline-flex;align-items:center;gap:2px;cursor:pointer;user-select:none;white-space:nowrap}
+.bh.on{color:var(--amb)}
+.bh-badge{font-size:10px;color:var(--amb);border:1px solid var(--amb);border-radius:3px;padding:0 4px;white-space:nowrap}
+.bh-badge.closed{opacity:.55;color:var(--dim);border-color:var(--dim)}

@@ -17,6 +17,7 @@ Each task:
 | `duration` | `null` or `{value, unit: "hours"|"days"}` |
 | `deadline` | `null` or `YYYY-MM-DD` (was `due`) |
 | `sortOrder` | number; lower = higher in TASKS and in each BOARD column |
+| `businessHours` | optional boolean; `true` = can only be done during business hours (roughly Mon–Fri 9–5 CT). Absent or `false` = no restriction |
 | kept fields | `owner`, `priority` (-1..4), `category`, `section`, `court`, `completed`, `watching`, `waitingOn`, `waitingFor`, `replyContact` |
 
 Completed items live in `tasks` with `status: "done"` (and `completed` date).
@@ -34,7 +35,7 @@ Optional PIN: when saving the token you can set a 4-digit PIN. The token is then
 Install: open the page on the phone and use *Add to Home Screen* (iOS Safari: Share → Add to Home Screen; Android Chrome: ⋮ → Install app). `manifest.webmanifest` + icons make it open full-screen like an app.
 
 ## Editing (TASKS tab, needs the token)
-Drag ⠿ or ▲▼ to reorder (updates `sortOrder`), tick Done, change status, set deadline and duration, add a task. Changes show instantly, then are saved by a contents-API `PUT` with the current `sha` (one commit per change). If someone else changed the file first (409), the edit is re-applied on the latest version; if the save fails, the change is rolled back with a red message.
+Drag ⠿ or ▲▼ to reorder (updates `sortOrder`), tick Done, change status, set deadline and duration, toggle 🏢 business hours (Mon–Fri 9–5 CT), add a task. Flagged tasks show an **M–F 9–5** badge (dimmed with “closed now” outside those hours). Changes show instantly, then are saved by a contents-API `PUT` with the current `sha` (one commit per change). If someone else changed the file first (409), the edit is re-applied on the latest version; if the save fails, the change is rolled back with a red message.
 
 `Import file` still loads a board JSON (old or new format) into this browser only, as a fallback; it pauses live sync until reload.
 

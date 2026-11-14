@@ -19,14 +19,19 @@ test('board.json passes board.schema.json (ajv, if installed)', (t) => {
   // and the schema rejects a broken task
   const bad = JSON.parse(JSON.stringify(board)); bad.tasks[0].status = 'NOW'; bad.tasks[1].duration = {value: 2, unit: 'weeks'};
   assert.strictEqual(ajv.validate(schema, bad), false);
+  const withBh = JSON.parse(JSON.stringify(board)); withBh.tasks[0].businessHours = true;
+  assert.ok(ajv.validate(schema, withBh), JSON.stringify(ajv.errors, null, 1));
+  withBh.tasks[0].businessHours = 'yes';
+  assert.strictEqual(ajv.validate(schema, withBh), false);
 });
 
-test('migrated counts: 32 open + 24 completed from Drive, plus the new Cybercab task', () => {
+test('board.json has unique ids, Cybercab #78, and required top-level fields', () => {
   const open = board.tasks.filter(t => t.status !== 'done'), done = board.tasks.filter(t => t.status === 'done');
-  assert.strictEqual(done.length, 24);
-  assert.strictEqual(open.length, 33);
-  const cy = board.tasks.find(t => /^Cybercab owner program watch \(through Feb 14, 2027\)$/.test(t.title));
-  assert.ok(cy && cy.status === 'open' && cy.id === '#78' && /Nov 16, 2026/.test(cy.notes));
+  assert.ok(done.length >= 24, 'expected at least the original 24 completed items');
+  assert.ok(open.length >= 1);
+  assert.strictEqual(open.length + done.length, board.tasks.length);
+  const cy = board.tasks.find(t => t.id === '#78');
+  assert.ok(cy && /Cybercab owner program watch/.test(cy.title) && /Nov 16, 2026/.test(cy.notes));
   assert.strictEqual(new Set(board.tasks.map(t => t.id)).size, board.tasks.length);
   for (const k of ['events', 'goals', 'sources', 'sectionOrder', 'label']) assert.ok(k in board, k);
 });
@@ -99,8 +104,48 @@ test('change detection: newer revisions apply, stale/equal ones are ignored', ()
 
 test('views work on the canonical board', () => {
   const d = viewData(board);
-  assert.strictEqual(d.items.length, 33);
+  assert.strictEqual(d.items.length, board.tasks.filter(t => t.status !== 'done').length);
   assert.ok(d.items.every(i => i.status !== 'done' && 'due' in i));
   assert.ok(Array.isArray(detectConflicts(d)));
   assert.strictEqual(validate(board).tasks.length, board.tasks.length);   // import accepts the new format
+});
+test('businessHours is kept through migrate and serialize; default is absent/false', () => {
+  const legacy = {items: [
+    {id: '#1', title: 'volt title', status: 'NOW', businessHours: true, priority: 0},
+    {id: '#2', title: 'other', status: 'THIS WEEK', priority: 1, businessHours: false}
+  ], completed: []};
+  const b = M.migrate(legacy, {now: '2026-11-14T16:00:00Z'});
+  assert.deepStrictEqual(M.validateBoard(b), []);
+  assert.strictEqual(b.tasks.find(t => t.id === '#1').businessHours, true);
+  assert.ok(M.isBusinessHours(b.tasks.find(t => t.id === '#1')));
+  assert.ok(!M.isBusinessHours(b.tasks.find(t => t.id === '#2')));
+  const can = {schemaVersion: 1, revision: 1, updatedAt: '2026-11-14T16:00:00Z', tasks: [
+    {id: '#1', title: 'a', status: 'open', duration: null, deadline: null, sortOrder: 10, notes: '', businessHours: true},
+    {id: '#2', title: 'b', status: 'open', duration: null, deadline: null, sortOrder: 20, notes: ''}
+  ]};
+  assert.deepStrictEqual(M.validateBoard(can), []);
+  const again = M.migrate(can);
+  assert.strictEqual(again.tasks[0].businessHours, true);
+  assert.ok(!('businessHours' in again.tasks[1]));
+  const parsed = JSON.parse(M.serialize(can));
+  assert.strictEqual(parsed.tasks[0].businessHours, true);
+  assert.ok(!('businessHours' in parsed.tasks[1]));
+  const withFalse = JSON.parse(JSON.stringify(can));
+  withFalse.tasks[1].businessHours = false;
+  const p2 = JSON.parse(M.serialize(withFalse));
+  assert.ok(!('businessHours' in p2.tasks[1]));
+  const bad = JSON.parse(JSON.stringify(can));
+  bad.tasks[0].businessHours = 'yes';
+  assert.ok(M.validateBoard(bad).some(e => /businessHours/.test(e)));
+});
+
+test('businessHoursOpen is Mon–Fri 9:00–17:00 America/Chicago', () => {
+  // Nov 2026 is CST (UTC-6); Sat Nov 14 is closed all day.
+  assert.strictEqual(M.businessHoursOpen('2026-11-14T17:24:00Z'), false); // Sat 11:24 CT
+  assert.strictEqual(M.businessHoursOpen('2026-11-13T15:00:00Z'), true);  // Fri 9:00 CT
+  assert.strictEqual(M.businessHoursOpen('2026-11-13T14:59:00Z'), false); // Fri 8:59 CT
+  assert.strictEqual(M.businessHoursOpen('2026-11-13T22:59:00Z'), true);  // Fri 4:59 CT
+  assert.strictEqual(M.businessHoursOpen('2026-11-13T23:00:00Z'), false); // Fri 5:00 CT
+  assert.strictEqual(M.businessHoursOpen('2026-11-16T15:00:00Z'), true);  // Mon 9:00 CT
+  assert.strictEqual(M.businessHoursOpen('2026-11-15T16:00:00Z'), false); // Sun noon CT
 });

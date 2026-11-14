@@ -89,6 +89,7 @@
       if (t.deadline !== null && !/^\d{4}-\d{2}-\d{2}$/.test(t.deadline || '')) e.push(p + ' deadline must be null or YYYY-MM-DD');
       if (typeof t.sortOrder !== 'number' || !isFinite(t.sortOrder)) e.push(p + ' sortOrder must be a number');
       if (typeof t.notes !== 'string') e.push(p + ' notes must be a string');
+      if (t.businessHours != null && typeof t.businessHours !== 'boolean') e.push(p + ' businessHours must be a boolean');
     });
     return e;
   }
@@ -141,10 +142,32 @@
   // Cheap fingerprint of fetched text, used when no ETag/sha is available.
   function fingerprint(text){ let h = 2166136261; for (let i = 0; i < text.length; i++){ h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16) + ':' + text.length; }
 
+  // True if the task can only be done during business hours (Mon–Fri 9:00–17:00 CT).
+  function isBusinessHours(t){ return !!(t && t.businessHours === true); }
+  // Is it Mon–Fri 9:00–17:00 America/Chicago at `at` (Date, ISO string, or now)?
+  function businessHoursOpen(at){
+    const d = at instanceof Date ? at : (at ? new Date(at) : new Date());
+    if (isNaN(d.getTime())) return false;
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(d).filter(p => p.type !== 'literal').map(p => [p.type, p.value]));
+    if (parts.weekday === 'Sat' || parts.weekday === 'Sun') return false;
+    const mins = Number(parts.hour) * 60 + Number(parts.minute);
+    return mins >= 9 * 60 && mins < 17 * 60;
+  }
+
   // Produce the next revision of a board after a local mutation.
   function bump(board, now){ return Object.assign({}, board, {revision: (board.revision || 0) + 1, updatedAt: now || new Date().toISOString()}); }
-  function serialize(board){ return JSON.stringify(board, null, 2) + '\n'; }
+  // Keep businessHours when true; omit it when absent or false (default is no restriction).
+  function serialize(board){
+    const tasks = (board.tasks || []).map(t => {
+      if (t.businessHours === true) return t;
+      if (!('businessHours' in t)) return t;
+      const c = Object.assign({}, t); delete c.businessHours; return c;
+    });
+    return JSON.stringify(Object.assign({}, board, {tasks}), null, 2) + '\n';
+  }
 
-  const api = {SCHEMA_VERSION, STATUSES, LEGACY_MAP, canonStatus, statusLabel, maskMoney, maskDeep, migrate, validateBoard, sorted, reorder, applyOrder, stepMove, nextId, decideIncoming, fingerprint, bump, serialize};
+  const api = {SCHEMA_VERSION, STATUSES, LEGACY_MAP, canonStatus, statusLabel, maskMoney, maskDeep, migrate, validateBoard, sorted, reorder, applyOrder, stepMove, nextId, decideIncoming, fingerprint, bump, serialize, isBusinessHours, businessHoursOpen};
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.BoardModel = api;
 })(typeof window !== 'undefined' ? window : this);

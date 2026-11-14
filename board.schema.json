@@ -62,6 +62,7 @@
         "court": {"type": ["string", "null"], "description": "mine | waiting | parked"},
         "completed": {"type": ["string", "null"], "description": "Date closed (done tasks)."},
         "watching": {"type": ["boolean", "null"]},
+        "businessHours": {"type": "boolean", "description": "true = can only be done during business hours (roughly Mon–Fri 9–5 CT). Absent or false = no restriction."},
         "waitingOn": {}, "waitingFor": {}, "replyContact": {}
       },
       "additionalProperties": true
