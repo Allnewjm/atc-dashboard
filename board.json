@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 41,
-  "updatedAt": "2026-11-15T18:34:52.425Z",
+  "revision": 42,
+  "updatedAt": "2026-11-15T18:35:17.580Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -357,8 +357,7 @@
     {
       "id": "#68",
       "title": "Groot Aurora waste account 3106-17926: Nov 12 autopay cancelled, pay manually or raise the limit",
-      "status": "in-progress",
-      "legacyStatus": "NOW",
+      "status": "done",
       "duration": null,
       "deadline": "2026-11-12",
       "sortOrder": 80,
@@ -367,7 +366,8 @@
       "section": "NOW",
       "priority": 1,
       "category": "Money/bills",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-15"
     },
     {
       "id": "#53",
