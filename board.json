@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 39,
-  "updatedAt": "2026-11-15T18:34:15.871Z",
+  "revision": 40,
+  "updatedAt": "2026-11-15T18:34:19.609Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1159,7 +1159,8 @@
       "priority": 2,
       "category": "Must-do/household",
       "section": "NOW",
-      "court": "mine"
+      "court": "mine",
+      "businessHours": true
     }
   ]
 }
