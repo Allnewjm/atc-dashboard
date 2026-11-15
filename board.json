@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 42,
-  "updatedAt": "2026-11-15T18:35:17.580Z",
+  "revision": 43,
+  "updatedAt": "2026-11-15T18:35:33.755Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -374,7 +374,10 @@
       "title": "Gather bank transfers (TOP PRIORITY, added by Julian Oct 16)",
       "status": "in-progress",
       "legacyStatus": "NOW",
-      "duration": null,
+      "duration": {
+        "value": 2,
+        "unit": "hours"
+      },
       "deadline": "2026-10-16",
       "sortOrder": 90,
       "notes": "NOW · Added Oct 16 at top of list",
