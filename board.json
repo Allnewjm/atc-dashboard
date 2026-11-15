@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 40,
-  "updatedAt": "2026-11-15T18:34:19.609Z",
+  "revision": 41,
+  "updatedAt": "2026-11-15T18:34:52.425Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1149,7 +1149,7 @@
       "title": "Eggs, saline solution, toilet paper",
       "status": "open",
       "duration": {
-        "value": 1,
+        "value": 4,
         "unit": "hours"
       },
       "deadline": "2026-11-15",
