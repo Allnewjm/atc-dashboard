@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 37,
-  "updatedAt": "2026-11-14T22:41:02.292Z",
+  "revision": 38,
+  "updatedAt": "2026-11-15T17:58:19.052Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -478,8 +478,7 @@
     {
       "id": "#66",
       "title": "Angelini & DiLeo: return choice letter + sign new contract, then book mediation",
-      "status": "waiting",
-      "legacyStatus": "WAITING",
+      "status": "done",
       "duration": {
         "value": 1,
         "unit": "hours"
@@ -491,7 +490,8 @@
       "section": "WAITING ON OTHERS",
       "priority": 2,
       "category": "Legal/divorce",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-15"
     },
     {
       "id": "#18",
