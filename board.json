@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 43,
-  "updatedAt": "2026-11-15T18:35:33.755Z",
+  "revision": 44,
+  "updatedAt": "2026-11-15T18:35:39.372Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -392,7 +392,10 @@
       "title": "Menards receipts → accountant (priority #2, was top until Oct 16)",
       "status": "in-progress",
       "legacyStatus": "NOW",
-      "duration": null,
+      "duration": {
+        "value": 2,
+        "unit": "hours"
+      },
       "deadline": "2026-10-16",
       "sortOrder": 100,
       "notes": "NOW · WHY TOP: blocks #39 taxes, which block #18 divorce package (Julian, Oct 15) · Grok Bot pulls them from the Menards account under allnewjm@hotmail.com; needs Julian's sign-in, the years, and the cards used; tap-to-pay purchases need the store kiosk",
