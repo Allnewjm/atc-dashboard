@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 45,
-  "updatedAt": "2026-11-16T14:18:48.904Z",
+  "revision": 46,
+  "updatedAt": "2026-11-16T14:19:02.211Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1168,6 +1168,20 @@
       "court": "mine",
       "businessHours": true,
       "completed": "2026-11-16"
+    },
+    {
+      "id": "#81",
+      "title": "fix printer",
+      "status": "open",
+      "duration": null,
+      "deadline": null,
+      "sortOrder": 50,
+      "notes": "Added Nov 16, 8:19:02 AM CT on the dashboard.",
+      "owner": "Julian",
+      "priority": 2,
+      "category": "Must-do/household",
+      "section": "NOW",
+      "court": "mine"
     }
   ]
 }
