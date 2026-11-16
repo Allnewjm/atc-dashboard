@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 44,
-  "updatedAt": "2026-11-15T18:35:39.372Z",
+  "revision": 45,
+  "updatedAt": "2026-11-16T14:18:48.904Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1153,7 +1153,7 @@
     {
       "id": "#80",
       "title": "Eggs, saline solution, toilet paper",
-      "status": "open",
+      "status": "done",
       "duration": {
         "value": 4,
         "unit": "hours"
@@ -1166,7 +1166,8 @@
       "category": "Must-do/household",
       "section": "NOW",
       "court": "mine",
-      "businessHours": true
+      "businessHours": true,
+      "completed": "2026-11-16"
     }
   ]
 }
