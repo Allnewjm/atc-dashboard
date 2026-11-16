@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 47,
-  "updatedAt": "2026-11-16T15:29:50Z",
+  "revision": 48,
+  "updatedAt": "2026-11-16T15:29:53Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1124,7 +1124,7 @@
       "duration": null,
       "deadline": "2027-02-14",
       "sortOrder": 340,
-      "notes": "Added Nov 14, 2026 CT (Julian, by voice). Weekday 9 AM CT check routine starts Mon Nov 16, 2026 and runs through Feb 14, 2027, or ends sooner once Chicagoland/Aurora availability is clear. Each run compares Tesla Cybercab owner program terms, pricing, availability and residency/location rules against the Nov 13, 2026 terms (no Austin residency requirement stated; personal use only, no ride-hail/fleet income without Tesla approval) and also tracks Model 3/Model Y network-earning options. Goal: become a Cybercab operator earning on Tesla's network.",
+      "notes": "Added Nov 14, 2026 CT (Julian, by voice). Weekday 9 AM CT check routine starts Mon Nov 16, 2026 and runs through Feb 14, 2027, or ends sooner once Chicagoland/Aurora availability is clear. Each run compares Tesla Cybercab owner program terms, pricing, availability and residency/location rules against the Nov 13, 2026 terms (no Austin residency requirement stated; personal use only, no ride-hail/fleet income without Tesla approval) and also tracks Model 3/Model Y network-earning options. Goal: become a Cybercab operator earning on Tesla's network. · Nov 16, 2026 9:29 AM CT: Criteria changed by Julian (voice, Nov 16): alert only when a personal Cybercab can be bought AND put on Tesla's Robotaxi network for profit by the customer. Nov 16 check: still personal-use only, network use barred, sales limited to current Robotaxi cities (no Illinois); Tesla floated Q2 2027 as a possible target for customer cars joining the network.",
       "owner": "Grok Bot / Julian",
       "section": "WAITING ON OTHERS",
       "priority": 3,
