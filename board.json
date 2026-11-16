@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 46,
-  "updatedAt": "2026-11-16T14:19:02.211Z",
+  "revision": 47,
+  "updatedAt": "2026-11-16T15:29:50Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1119,7 +1119,7 @@
     },
     {
       "id": "#78",
-      "title": "Cybercab owner program watch (through Feb 14, 2027)",
+      "title": "Cybercab network-income watch: alert when a customer can buy one and run it on Tesla's Robotaxi network for profit (through Feb 14, 2027)",
       "status": "open",
       "duration": null,
       "deadline": "2027-02-14",
