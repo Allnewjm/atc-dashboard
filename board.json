@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 48,
-  "updatedAt": "2026-11-16T15:29:53Z",
+  "revision": 49,
+  "updatedAt": "2026-11-17T05:04:10Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1180,6 +1180,23 @@
       "owner": "Julian",
       "priority": 2,
       "category": "Must-do/household",
+      "section": "NOW",
+      "court": "mine"
+    },
+    {
+      "id": "#82",
+      "title": "Set up remote access to Moto G Stylus 5G (2024) so Grok Bot can operate it",
+      "status": "open",
+      "duration": {
+        "value": 1,
+        "unit": "hours"
+      },
+      "deadline": "2026-11-17",
+      "sortOrder": 350,
+      "notes": "Nov 16, 2026 11:04 PM CT: added · Steps: 1) Settings > About phone > tap Build number 7x to enable Developer options. 2) Turn on USB debugging. 3) Connect phone to BellyRucks PC by USB and approve the debugging prompt. 4) Grok Bot installs Android platform tools (ADB) + scrcpy on BellyRucks with Julian's OK. Optional: install Grok Bot app on phone and allow calendar, contacts, location permissions.",
+      "owner": "Julian",
+      "priority": 2,
+      "category": "Tech",
       "section": "NOW",
       "court": "mine"
     }
