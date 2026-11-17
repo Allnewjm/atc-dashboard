@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 50,
-  "updatedAt": "2026-11-17T05:04:34Z",
+  "revision": 51,
+  "updatedAt": "2026-11-17T05:17:49Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1214,6 +1214,23 @@
       "owner": "Julian",
       "priority": 2,
       "category": "Tech",
+      "section": "NOW",
+      "court": "mine"
+    },
+    {
+      "id": "#84",
+      "title": "Amigo Books Pros: draft bilingual (English/Spanish) client consent form for AI-first operations",
+      "status": "open",
+      "duration": {
+        "value": 2,
+        "unit": "hours"
+      },
+      "deadline": null,
+      "sortOrder": 370,
+      "notes": "Nov 16, 2026 11:17 PM CT: added · Supports AI-first core principle (Nov 16). Cover: client acceptance of AI-first operations; AI bots participating in calls to capture all information (announce AI + recording at start of each call, per Illinois all-party consent law); separate IRS 7216 consent if tax-return info may be discussed; BIPA notice if any tool creates voiceprints/face scans; retention/deletion of recordings and transcripts. Have a tax attorney review.",
+      "owner": "Julian",
+      "priority": 2,
+      "category": "Business",
       "section": "NOW",
       "court": "mine"
     }
