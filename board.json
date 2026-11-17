@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 53,
-  "updatedAt": "2026-11-17T05:20:46Z",
+  "revision": 54,
+  "updatedAt": "2026-11-17T05:37:00Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1203,19 +1203,20 @@
     {
       "id": "#83",
       "title": "Reprogram TP-Link Wi-Fi extender",
-      "status": "open",
+      "status": "done",
       "duration": {
         "value": 1,
         "unit": "hours"
       },
       "deadline": "2026-11-17",
       "sortOrder": 360,
-      "notes": "Nov 16, 2026 11:04 PM CT: added · Model not given yet; ask Julian for the extender model when starting. · Nov 16, 2026 11:20 PM CT: Model is TP-Link RE315 (hardware version not confirmed yet). Reset: pinhole Reset 1 sec while powered on. Setup: join TP-Link_Extender, go to tplinkrepeater.net or 192.168.0.254 (or Tether app), create a password (no default login). Official guide: https://www.tp-link.com/us/user-guides/re215&re315_v1/faq",
+      "notes": "Nov 16, 2026 11:04 PM CT: added · Model not given yet; ask Julian for the extender model when starting. · Nov 16, 2026 11:20 PM CT: Model is TP-Link RE315 (hardware version not confirmed yet). Reset: pinhole Reset 1 sec while powered on. Setup: join TP-Link_Extender, go to tplinkrepeater.net or 192.168.0.254 (or Tether app), create a password (no default login). Official guide: https://www.tp-link.com/us/user-guides/re215&re315_v1/faq · Nov 16, 2026 11:37 PM CT: Julian got the RE315 working with the new router (Nov 16, 11:36 PM CT).",
       "owner": "Julian",
       "priority": 2,
       "category": "Tech",
       "section": "NOW",
-      "court": "mine"
+      "court": "mine",
+      "completed": "2026-11-16"
     },
     {
       "id": "#84",
