@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 49,
-  "updatedAt": "2026-11-17T05:04:10Z",
+  "revision": 50,
+  "updatedAt": "2026-11-17T05:04:34Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1194,6 +1194,23 @@
       "deadline": "2026-11-17",
       "sortOrder": 350,
       "notes": "Nov 16, 2026 11:04 PM CT: added · Steps: 1) Settings > About phone > tap Build number 7x to enable Developer options. 2) Turn on USB debugging. 3) Connect phone to BellyRucks PC by USB and approve the debugging prompt. 4) Grok Bot installs Android platform tools (ADB) + scrcpy on BellyRucks with Julian's OK. Optional: install Grok Bot app on phone and allow calendar, contacts, location permissions.",
+      "owner": "Julian",
+      "priority": 2,
+      "category": "Tech",
+      "section": "NOW",
+      "court": "mine"
+    },
+    {
+      "id": "#83",
+      "title": "Reprogram TP-Link Wi-Fi extender",
+      "status": "open",
+      "duration": {
+        "value": 1,
+        "unit": "hours"
+      },
+      "deadline": "2026-11-17",
+      "sortOrder": 360,
+      "notes": "Nov 16, 2026 11:04 PM CT: added · Model not given yet; ask Julian for the extender model when starting.",
       "owner": "Julian",
       "priority": 2,
       "category": "Tech",
