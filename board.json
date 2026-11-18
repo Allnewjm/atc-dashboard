@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 54,
-  "updatedAt": "2026-11-17T05:37:00Z",
+  "revision": 55,
+  "updatedAt": "2026-11-18T13:55:10Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -567,7 +567,7 @@
       "duration": null,
       "deadline": null,
       "sortOrder": 200,
-      "notes": "WAITING · Letter and cédula correction sent. Oct 21, 2026 9:10 AM CT Yuliana Escobar (Geoproyectos, Directora de Trámites) said the payment-plan change went to project management for review; awaiting their answer. · From cousin Sebastian (Gmail msg 1a1575eb70e2ca77, Oct 19 10:32 PM). Sign with name + cédula; send to tramites@geoproyectos.co, amartinez@geoproyectos.co, coordinadordetramites@geoproyectos.co with attached Plan pago Apartasuite Paseo del prado 706 202610.pdf. Fiduciary account 10047027661. New timeline per John Mancera: presale Feb 10 2027, handover ~Nov 2029. · Nov 14, 2026: Nov 14 7:54 AM CT Sebastian nudged Geoproyectos; 9:44 AM CT Julian sent his own follow-up (cc Sebastian) to tramites, amartinez, coordinadordetramites asking for status of the unit 706 payment-plan request. Still waiting on their reply.",
+      "notes": "WAITING · Letter and cédula correction sent. Oct 21, 2026 9:10 AM CT Yuliana Escobar (Geoproyectos, Directora de Trámites) said the payment-plan change went to project management for review; awaiting their answer. · From cousin Sebastian (Gmail msg 1a1575eb70e2ca77, Oct 19 10:32 PM). Sign with name + cédula; send to tramites@geoproyectos.co, amartinez@geoproyectos.co, coordinadordetramites@geoproyectos.co with attached Plan pago Apartasuite Paseo del prado 706 202610.pdf. Fiduciary account 10047027661. New timeline per John Mancera: presale Feb 10 2027, handover ~Nov 2029. · Nov 14, 2026: Nov 14 7:54 AM CT Sebastian nudged Geoproyectos; 9:44 AM CT Julian sent his own follow-up (cc Sebastian) to tramites, amartinez, coordinadordetramites asking for status of the unit 706 payment-plan request. Still waiting on their reply. · Nov 18, 2026 7:55 AM CT: Nov 17-18: GeoProyectos' lawyer (Mancera) said the otro sí with the adjusted payment plan was drafted and posted on the Alianza Fiduciaria platform for signing. Sebastián reported it signed Nov 18. Waiting on GeoProyectos' confirmation/next steps. No forward needed (Sebastián was on To).",
       "owner": "Julian",
       "section": "WAITING ON OTHERS",
       "priority": 3,
