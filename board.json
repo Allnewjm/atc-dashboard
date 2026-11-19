@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 64,
-  "updatedAt": "2026-11-19T14:41:53Z",
+  "revision": 65,
+  "updatedAt": "2026-11-19T14:42:02Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1251,7 +1251,7 @@
     },
     {
       "id": "#86",
-      "title": "Develop a training and evaluation course for Amigo Books Pros employees",
+      "title": "Amigo Books Pros: develop a training and evaluation course for employees",
       "status": "open",
       "duration": null,
       "deadline": null,
