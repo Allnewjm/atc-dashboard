@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 65,
-  "updatedAt": "2026-11-19T14:42:02Z",
+  "revision": 66,
+  "updatedAt": "2026-11-19T14:56:00Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1256,7 +1256,7 @@
       "duration": null,
       "deadline": null,
       "sortOrder": 390,
-      "notes": "Nov 19, 2026 8:41 AM CT: added",
+      "notes": "Nov 19, 2026 8:41 AM CT: added · Nov 19, 2026 8:56 AM CT: Nov 19: draft training & evaluation plan Page written (15 modules, 3 cert levels, practice ladder). Open decisions: payroll in scope?, train all 8 SOPs?, first trainee/grader.",
       "owner": "Julian",
       "priority": 2,
       "category": "Business",
