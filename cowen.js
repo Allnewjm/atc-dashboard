@@ -128,7 +128,8 @@ ${chart([{name: 'BTC', color: '#39ff8f', data: lastN(histBtc, 365)}, {name: 'Rea
 
 <h3>SOURCES AND FRESHNESS</h3><table class="cw-src"><tr><th>Metric</th><th>Value</th><th>As of</th><th>Status</th><th>Source</th></tr>
 ${['btc', 'stablecoins', 'usdtDominance', 'dxy', 'netLiquidity', 'gold', 'mvrvZ', 'realizedPrice', 'sthRealizedPrice', 'balancedPrice', 'fearGreed'].map(k => { const m = M(k);
-  return `<tr><td>${esc(m.label || k)}</td><td>${esc(m.value == null ? '—' : num(m.value, m.value > 1000 ? 0 : 2))}</td><td>${fmtDay(m.asOf)}</td><td>${badge(m)}${m.stale ? ' <span class="red small">no good fetch for 3+ days</span>' : ''}${m.error ? ` <span class="small" title="${esc(m.error)}">last fetch failed</span>` : ''}</td><td><a href="${esc(m.sourceUrl || '#')}" target="_blank" rel="noopener">${esc(m.source || '')}</a></td></tr>`; }).join('')}
+  const LBL = {btc: 'Bitcoin price', stablecoins: 'Stablecoin supply (USD)', usdtDominance: 'USDT dominance (%)', netLiquidity: 'Fed net liquidity ($bn)', fearGreed: 'Fear & Greed'};
+  return `<tr><td>${esc(LBL[k] || m.label || k)}</td><td>${esc(m.value == null ? '—' : num(m.value, m.value > 1000 || k === 'fearGreed' ? 0 : 2))}</td><td>${fmtDay(m.asOf)}</td><td>${badge(m)}${m.stale ? ' <span class="red small">no good fetch for 3+ days</span>' : ''}${m.error ? ` <span class="small" title="${esc(m.error)}">last fetch failed</span>` : ''}</td><td><a href="${esc(m.sourceUrl || '#')}" target="_blank" rel="noopener">${esc(m.source || '')}</a></td></tr>`; }).join('')}
 </table><p class="small">Stale = no successful fetch for more than ${t.staleDays || 3} days (last good value kept). On-chain MVRV Z, realized and STH realized prices lag about 7 days on bitcoin-data.com's free tier. "Balanced price" approximates Cowen's "balance price". Gold "turned up" = close above its 50-day average after a 5%+ drawdown within the last 60 sessions.</p>`;
     $('#cw-refresh').onclick = refresh;
   }
