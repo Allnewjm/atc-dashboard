@@ -66,3 +66,24 @@ input,select{background:#020a06;color:#cfeedd;border:1px solid var(--g2);border-
   .prow .ptime{flex:1 0 100%}
   .pack-settings input,.pack-settings select{font-size:16px}
 }
+/* COWEN tab */
+.cw-head{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-start}
+.cw-disc{font-size:12px;color:#cfeedd;max-width:60em;margin:4px 0}
+.cw-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;max-width:360px}
+.cw-actions .cw-help{text-align:right}
+.cw-full{color:var(--blue);font-size:12px}
+.cw-summary{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--g2);border-radius:4px;padding:10px 14px;margin:10px 0}
+.cw-summary.warn{border-color:var(--amb)}
+.cw-big{font-size:34px;font-weight:700;color:var(--g);white-space:nowrap}
+.cw-checks{list-style:none;padding:0;margin:4px 0 0}.cw-checks li{margin:2px 0}.cw-checks li.ok{color:var(--g)}.cw-checks li.no{color:#ff9b9b}.cw-checks li.dim{color:var(--dim)}
+.cw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:10px 0}
+.cw-card{background:var(--panel);border:1px solid #12402a;border-radius:4px;padding:8px 10px}.cw-card.wide{grid-column:span 2}@media(max-width:520px){.cw-card.wide{grid-column:span 1}}
+.cw-ct{color:var(--dim);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.cw-val{font-size:22px;font-weight:700;color:var(--g);margin:2px 0}
+.cw-card a,.cw-src a,.cw-cal a{color:var(--blue)}
+.cw-badge{font-size:9px;border:1px solid currentColor;border-radius:3px;padding:0 3px;margin-left:4px}
+.cw-chart{width:100%;height:auto;background:rgba(7,29,19,.6);border-radius:4px}
+.cw-chart .cw-gl{stroke:rgba(57,255,143,.12)}.cw-ax{fill:var(--dim);font-size:10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.cw-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;margin:2px 0 8px}
+.cw-src{width:100%;border-collapse:collapse;font-size:12px}.cw-src th,.cw-src td{text-align:left;padding:3px 6px;border-bottom:1px solid #12402a}.cw-src th{color:var(--dim)}
+@media(max-width:640px){.cw-src{display:block;overflow-x:auto}.cw-actions{align-items:flex-start}.cw-actions .cw-help{text-align:left}}

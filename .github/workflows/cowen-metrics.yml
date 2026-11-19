@@ -1,0 +1,39 @@
+name: Cowen metrics (daily)
+
+on:
+  schedule:
+    - cron: '0 13 * * *'   # 13:00 UTC = 7:00 AM CST (8:00 AM during CDT)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cowen-metrics
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch metrics and write data/cowen.json
+        run: python3 scripts/cowen_metrics.py
+      - name: Commit only if data changed (rebase first so board.json edits are never overwritten)
+        run: |
+          if git diff --quiet -- data/cowen.json; then echo "No change in data/cowen.json"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cowen.json
+          git commit -m "Cowen metrics: daily update"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            echo "push failed, retrying ($i)"; sleep $((i*5))
+          done
+          exit 1

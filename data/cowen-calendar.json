@@ -1,0 +1,28 @@
+{
+  "note": "Hand-edited. Dates checked on Nov 18, 2026 against the linked sources. Context only, not a signal.",
+  "updated": "2026-11-18",
+  "events": [
+    {"date": "2026-11-19", "title": "Anthropic expected to begin trading (reported)", "kind": "ipo",
+     "detail": "Reported as expected to list Thursday, Nov 19, 2026. Relevant to the AI-IPO liquidity theme Cowen mentions.",
+     "source": "Yahoo Finance, Nov 18, 2026", "url": "https://finance.yahoo.com/markets/article/openai-ceo-sam-altman-on-potential-ipo-we-plan-to-be-public-184333485.html"},
+    {"date": "2026-12-08", "end": "2026-12-09", "title": "FOMC meeting (with Summary of Economic Projections)", "kind": "fed",
+     "source": "Federal Reserve FOMC calendar", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+    {"date": "2026-12-11", "title": "Government funding deadline (CR expires)", "kind": "fiscal",
+     "detail": "The FY2027 continuing resolution (P.L. 119-103) funds the government through Dec 11, 2026. Without new appropriations or another CR, a funding gap and possible shutdown begins Dec 12.",
+     "source": "CRS R49353 / Congress.gov H.R.6500", "url": "https://www.congress.gov/bill/119th-congress/house-bill/6500"},
+    {"date": "2027-01-26", "end": "2027-01-27", "title": "FOMC meeting", "kind": "fed",
+     "source": "Federal Reserve FOMC calendar (tentative)", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+    {"date": "2027-03-16", "end": "2027-03-17", "title": "FOMC meeting", "kind": "fed",
+     "source": "Federal Reserve FOMC calendar (tentative)", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+    {"date": "2027-04-27", "end": "2027-04-28", "title": "FOMC meeting", "kind": "fed",
+     "source": "Federal Reserve FOMC calendar (tentative)", "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"}
+  ],
+  "notes": [
+    {"title": "Midterm-year pattern", "kind": "seasonality",
+     "detail": "2026 is a US midterm year (elections held Nov 3, 2026; Democrats take control of Congress in January 2027). Cowen's calendar comparisons to past midterm years are his framing, and the weakest part of the case per Financial Analyst's review.",
+     "source": "Akin Gump, Nov 2026", "url": "https://www.akingump.com/en/insights/blogs/the-approps-drop/the-midterms-reset-the-fy27-appropriations-endgame"},
+    {"title": "Possible OpenAI IPO: no date", "kind": "ipo",
+     "detail": "OpenAI confidentially submitted a draft S-1 (announced Jun 8, 2026) but has set no timing. Altman ruled out a 2026 IPO; Brockman said Nov 4, 2026 it could be IPO-ready in 2027.",
+     "source": "OpenAI; TechCrunch Nov 5, 2026", "url": "https://techcrunch.com/2026/11/05/openai-president-greg-brockman-says-company-could-be-ipo-ready-in-2027/"}
+  ]
+}
