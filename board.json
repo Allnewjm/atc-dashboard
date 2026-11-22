@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 69,
-  "updatedAt": "2026-11-22T19:20:32Z",
+  "revision": 70,
+  "updatedAt": "2026-11-22T19:20:55Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1283,7 +1283,7 @@
       "deadline": null,
       "duration": null,
       "id": "#88",
-      "notes": "Nov 22, 2026 1:21 PM CT: added. Business cards show the wrong number (630-203-8888); the correct tenant/business line is 331-203-8888. Reprint cards and fix the number anywhere else it appears.",
+      "notes": "Nov 22, 2026 1:21 PM CT: added. Business cards show the wrong number (630-203-8888); the correct tenant/business line is 331-203-8888. Reprint cards and fix the number anywhere else it appears. · Nov 22, 2026 1:23 PM CT: the 630 number also appears on the live preview site allnewjm.github.io/amigobookspros-preview (call button and Phone/WhatsApp contact line) and in the card files in /workspace/amigobooks (gen_card.py, gen_bw.py).",
       "owner": "Julian",
       "priority": 2,
       "section": "NOW",
