@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 67,
-  "updatedAt": "2026-11-19T17:18:23Z",
+  "revision": 68,
+  "updatedAt": "2026-11-22T18:14:53Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1262,6 +1262,20 @@
       "category": "Business",
       "section": "NOW",
       "court": "mine"
+    },
+    {
+      "category": "Tech",
+      "court": "mine",
+      "deadline": null,
+      "duration": null,
+      "id": "#87",
+      "notes": "Nov 22, 2026 12:16 PM CT: added. Goal: find smart glasses with an open SDK or developer access that can be reprogrammed with Cursor or Grok Bot for experiments. Note: the fauxely.com 'AI smart glasses' ad looks like a dropship scam, so skip it.",
+      "owner": "Julian",
+      "priority": 3,
+      "section": "HOUSE / ADMIN (backlog)",
+      "sortOrder": 590,
+      "status": "open",
+      "title": "Research programmable smart glasses for Cursor / Grok Bot experiments"
     }
   ]
 }
