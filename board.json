@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "revision": 68,
-  "updatedAt": "2026-11-22T18:14:53Z",
+  "revision": 69,
+  "updatedAt": "2026-11-22T19:20:32Z",
   "label": "Julian (private)",
   "generated": "2026-11-12T00:19",
   "today": "2026-11-05",
@@ -1276,6 +1276,20 @@
       "sortOrder": 590,
       "status": "open",
       "title": "Research programmable smart glasses for Cursor / Grok Bot experiments"
+    },
+    {
+      "category": "Business",
+      "court": "mine",
+      "deadline": null,
+      "duration": null,
+      "id": "#88",
+      "notes": "Nov 22, 2026 1:21 PM CT: added. Business cards show the wrong number (630-203-8888); the correct tenant/business line is 331-203-8888. Reprint cards and fix the number anywhere else it appears.",
+      "owner": "Julian",
+      "priority": 2,
+      "section": "NOW",
+      "sortOrder": 600,
+      "status": "open",
+      "title": "Reprint business cards with correct number 331-203-8888"
     }
   ]
 }
